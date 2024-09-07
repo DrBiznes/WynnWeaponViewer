@@ -1,11 +1,11 @@
 {
-	"key.categories.wynn_weapon_viewer": "Wynn Weapon Viewer",
-	"key.wynn_weapon_viewer.toggle_zoom": "Toggle weapon zoom",
+	"key.wynn_weapon_viewer.toggle_zoom": "Toggle Weapon Zoom",
+	"category.wynn_weapon_viewer.general": "Wynn Weapon Viewer",
 
 	"config.wynn_weapon_viewer.title": "Wynn Weapon Viewer Configuration",
 	"config.wynn_weapon_viewer.category.general": "General",
 	"config.wynn_weapon_viewer.option.enabled": "Enabled",
-	"config.wynn_weapon_viewer.option.enabled.tooltip": "Toggle the weapon zoom feature",
+	"config.wynn_weapon_viewer.option.enabled.tooltip": "Enable or disable the Wynn Weapon Viewer mod",
 	"config.wynn_weapon_viewer.option.scale": "Zoom Scale",
 	"config.wynn_weapon_viewer.option.scale.tooltip": "Set the scale of the zoomed weapon (0.1 to 2.0)",
 	"config.wynn_weapon_viewer.option.alignment": "Horizontal Alignment",
@@ -14,6 +14,8 @@
 	"config.wynn_weapon_viewer.option.xOffset.tooltip": "Set the horizontal offset of the zoomed weapon",
 	"config.wynn_weapon_viewer.option.yOffset": "Y Offset",
 	"config.wynn_weapon_viewer.option.yOffset.tooltip": "Set the vertical offset of the zoomed weapon",
+	"config.wynn_weapon_viewer.option.showToggleMessage": "Show Toggle Message",
+	"config.wynn_weapon_viewer.option.showToggleMessage.tooltip": "Show a message when toggling the weapon zoom",
 
 	"config.wynn_weapon_viewer.option.alignment.left": "Left",
 	"config.wynn_weapon_viewer.option.alignment.right": "Right"

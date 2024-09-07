@@ -28,10 +28,11 @@ public class ModConfig implements ModMenuApi {
 
     private static class Config {
         boolean enabled = true;
-        float scale = 0.8F;
-        HorizontalAlignment horizontalAlignment = HorizontalAlignment.LEFT;
+        float scale = 0.4F;
+        HorizontalAlignment horizontalAlignment = HorizontalAlignment.RIGHT;  // Changed default to RIGHT
         int xOffset = 0;
         int yOffset = 0;
+        boolean showToggleMessage = true;  // New option
     }
 
     public static boolean isEnabled() {
@@ -57,6 +58,10 @@ public class ModConfig implements ModMenuApi {
 
     public static int getYOffset() {
         return config.yOffset;
+    }
+
+    public static boolean shouldShowToggleMessage() {
+        return config.showToggleMessage;
     }
 
     private static void loadConfig() {
@@ -101,9 +106,9 @@ public class ModConfig implements ModMenuApi {
                     .build());
 
             general.addEntry(entryBuilder.startFloatField(Text.translatable("config.wynn_weapon_viewer.option.scale"), config.scale)
-                    .setDefaultValue(0.8F)
+                    .setDefaultValue(0.4F)
                     .setMin(0.1F)
-                    .setMax(2.0F)
+                    .setMax(1.0F)
                     .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.scale.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.scale = newValue;
@@ -112,7 +117,7 @@ public class ModConfig implements ModMenuApi {
                     .build());
 
             general.addEntry(entryBuilder.startEnumSelector(Text.translatable("config.wynn_weapon_viewer.option.alignment"), HorizontalAlignment.class, config.horizontalAlignment)
-                    .setDefaultValue(HorizontalAlignment.LEFT)
+                    .setDefaultValue(HorizontalAlignment.RIGHT)
                     .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.alignment.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.horizontalAlignment = newValue;
@@ -138,6 +143,15 @@ public class ModConfig implements ModMenuApi {
                     .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.yOffset.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.yOffset = newValue;
+                        saveConfig();
+                    })
+                    .build());
+
+            general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.wynn_weapon_viewer.option.showToggleMessage"), config.showToggleMessage)
+                    .setDefaultValue(true)
+                    .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.showToggleMessage.tooltip"))
+                    .setSaveConsumer(newValue -> {
+                        config.showToggleMessage = newValue;
                         saveConfig();
                     })
                     .build());
