@@ -2,7 +2,7 @@
 ![icon](https://github.com/user-attachments/assets/112a222c-fe55-440d-a2b2-efd036931fdb)
 
 
-I make your weapon big, duh. A fork of [Big Items, Duh](https://modrinth.com/mod/big-items-duh) designed to only show Wynncraft gear and updated to 1.21 Made for my modpack [World of Wynncraft](https://modrinth.com/modpack/world-of-wynncraft)
+I make your weapon big, duh. A fork of [Big Items, Duh](https://modrinth.com/mod/big-items-duh) designed to only show Wynncraft gear and updated to 1.21. This will be more useful once CITResewn updates. Made for my modpack [World of Wynncraft](https://modrinth.com/modpack/world-of-wynncraft)
 
 ## What's Up
 
