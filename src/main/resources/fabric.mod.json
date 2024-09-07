@@ -5,11 +5,11 @@
 	"name": "Wynn Weapon Viewer",
 	"description": "View Wynncraft weapons in big size.",
 	"authors": [
-		"YourName"
+		"DrBiznes"
 	],
 	"contact": {
-		"homepage": "https://github.com/YourUsername/wynn-weapon-viewer",
-		"sources": "https://github.com/YourUsername/wynn-weapon-viewer"
+		"homepage": "https://github.com/bob10234/WynnWeaponViewer",
+		"sources": "https://github.com/bob10234/WynnWeaponViewer"
 	},
 	"license": "MIT",
 	"icon": "assets/wynn_weapon_viewer/icon.png",

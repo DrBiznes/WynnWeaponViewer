@@ -1,7 +1,6 @@
 {
 	"key.categories.wynn_weapon_viewer": "Wynn Weapon Viewer",
 	"key.wynn_weapon_viewer.toggle_zoom": "Toggle weapon zoom",
-	"key.wynn_weapon_viewer.hold_zoom": "Hold to zoom weapons",
 
 	"config.wynn_weapon_viewer.title": "Wynn Weapon Viewer Configuration",
 	"config.wynn_weapon_viewer.category.general": "General",

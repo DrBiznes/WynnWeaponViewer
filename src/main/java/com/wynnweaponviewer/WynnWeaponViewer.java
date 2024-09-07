@@ -8,6 +8,7 @@ import net.minecraft.client.util.InputUtil;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.lwjgl.glfw.GLFW;
 
 public class WynnWeaponViewer implements ClientModInitializer {
 
@@ -17,14 +18,14 @@ public class WynnWeaponViewer implements ClientModInitializer {
 	public static final String MOD_NAME = "Wynn Weapon Viewer";
 
 	public static final String KEY_BINDING_CATEGORY = "key.categories." + MOD_ID;
-	public static final KeyBinding TOGGLE_KEY_BINDING = new KeyBinding("key." + MOD_ID + ".toggle_zoom", InputUtil.Type.KEYSYM, InputUtil.UNKNOWN_KEY.getCode(), KEY_BINDING_CATEGORY);
-	public static final KeyBinding HOLD_KEY_BINDING = new KeyBinding("key." + MOD_ID + ".hold_zoom", InputUtil.Type.KEYSYM, InputUtil.UNKNOWN_KEY.getCode(), KEY_BINDING_CATEGORY);
+	public static final KeyBinding TOGGLE_KEY_BINDING = new KeyBinding("key." + MOD_ID + ".toggle_zoom", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_N, KEY_BINDING_CATEGORY);
+
+	private static boolean zoomEnabled = false;
 
 	@Override
 	public void onInitializeClient() {
 		log(Level.INFO, "Initializing Wynn Weapon Viewer");
 		KeyBindingHelper.registerKeyBinding(TOGGLE_KEY_BINDING);
-		KeyBindingHelper.registerKeyBinding(HOLD_KEY_BINDING);
 	}
 
 	public static void log(Level level, String message){
@@ -32,6 +33,9 @@ public class WynnWeaponViewer implements ClientModInitializer {
 	}
 
 	public static boolean shallRender() {
-		return ModConfig.isEnabled() || HOLD_KEY_BINDING.isPressed();
+		while (TOGGLE_KEY_BINDING.wasPressed()) {
+			zoomEnabled = !zoomEnabled;
+		}
+		return ModConfig.isEnabled() && zoomEnabled;
 	}
 }
