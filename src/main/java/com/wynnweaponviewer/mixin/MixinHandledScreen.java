@@ -34,9 +34,6 @@ public abstract class MixinHandledScreen extends Screen {
 
 	@Shadow @Final protected ScreenHandler handler;
 
-	@Unique
-	private ItemStack lastWeaponStack = ItemStack.EMPTY;
-
 	protected MixinHandledScreen(Text title) {
 		super(title);
 	}
@@ -61,23 +58,17 @@ public abstract class MixinHandledScreen extends Screen {
 	private ItemStack determineRenderStack(int mouseX, int mouseY) {
 		ItemStack cursorStack = handler.getCursorStack();
 		if (!cursorStack.isEmpty() && isWynncraftWeapon(cursorStack)) {
-			lastWeaponStack = cursorStack;
 			return cursorStack;
 		}
 
 		Slot slot = getSlotAt(mouseX, mouseY);
-		ItemStack slotStack = slot != null ? slot.getStack() : ItemStack.EMPTY;
-
-		if (!slotStack.isEmpty() && isWynncraftWeapon(slotStack)) {
-			lastWeaponStack = slotStack;
-			return slotStack;
+		if (slot != null) {
+			ItemStack slotStack = slot.getStack();
+			if (!slotStack.isEmpty() && isWynncraftWeapon(slotStack)) {
+				return slotStack;
+			}
 		}
 
-		if (!lastWeaponStack.isEmpty() && isWynncraftWeapon(lastWeaponStack)) {
-			return lastWeaponStack;
-		}
-
-		lastWeaponStack = ItemStack.EMPTY;
 		return ItemStack.EMPTY;
 	}
 
