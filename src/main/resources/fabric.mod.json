@@ -1,0 +1,36 @@
+{
+	"schemaVersion": 1,
+	"id": "wynn_weapon_viewer",
+	"version": "${version}",
+	"name": "Wynn Weapon Viewer",
+	"description": "View Wynncraft weapons in big size.",
+	"authors": [
+		"YourName"
+	],
+	"contact": {
+		"homepage": "https://github.com/YourUsername/wynn-weapon-viewer",
+		"sources": "https://github.com/YourUsername/wynn-weapon-viewer"
+	},
+	"license": "MIT",
+	"icon": "assets/wynn_weapon_viewer/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"com.wynnweaponviewer.WynnWeaponViewer"
+		],
+		"modmenu": [
+			"com.wynnweaponviewer.config.ModConfig"
+		]
+	},
+	"mixins": [
+		"wynn_weapon_viewer.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.14.21",
+		"minecraft": "~1.21",
+		"java": ">=17",
+		"fabric-api": "*",
+		"cloth-config": ">=15.0.130",
+		"wynntils": ">=2.1.1"
+	}
+}

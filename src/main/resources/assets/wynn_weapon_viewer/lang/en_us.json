@@ -1,0 +1,21 @@
+{
+	"key.categories.wynn_weapon_viewer": "Wynn Weapon Viewer",
+	"key.wynn_weapon_viewer.toggle_zoom": "Toggle weapon zoom",
+	"key.wynn_weapon_viewer.hold_zoom": "Hold to zoom weapons",
+
+	"config.wynn_weapon_viewer.title": "Wynn Weapon Viewer Configuration",
+	"config.wynn_weapon_viewer.category.general": "General",
+	"config.wynn_weapon_viewer.option.enabled": "Enabled",
+	"config.wynn_weapon_viewer.option.enabled.tooltip": "Toggle the weapon zoom feature",
+	"config.wynn_weapon_viewer.option.scale": "Zoom Scale",
+	"config.wynn_weapon_viewer.option.scale.tooltip": "Set the scale of the zoomed weapon (0.1 to 2.0)",
+	"config.wynn_weapon_viewer.option.alignment": "Horizontal Alignment",
+	"config.wynn_weapon_viewer.option.alignment.tooltip": "Set the horizontal alignment of the zoomed weapon",
+	"config.wynn_weapon_viewer.option.xOffset": "X Offset",
+	"config.wynn_weapon_viewer.option.xOffset.tooltip": "Set the horizontal offset of the zoomed weapon",
+	"config.wynn_weapon_viewer.option.yOffset": "Y Offset",
+	"config.wynn_weapon_viewer.option.yOffset.tooltip": "Set the vertical offset of the zoomed weapon",
+
+	"config.wynn_weapon_viewer.option.alignment.left": "Left",
+	"config.wynn_weapon_viewer.option.alignment.right": "Right"
+}
