@@ -57,7 +57,7 @@ You can configure WWB through the Mod Menu interface or config file:
 
 ## Acknowledgments
 
-- Thanks to the Distant Horizons team for their amazing mod
+- Thanks to Siphalor for the original mod Big Items, Duh
 - Thanks to the Wynncraft team
 - Thanks to IgbarvonSquid
 
