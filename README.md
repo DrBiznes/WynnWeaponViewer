@@ -4,6 +4,9 @@
 
 I make your weapon big, duh. A fork of [Big Items, Duh](https://modrinth.com/mod/big-items-duh) designed to only show Wynncraft gear and updated to 1.21. This will be more useful once CITResewn updates. Made for my modpack [World of Wynncraft](https://modrinth.com/modpack/world-of-wynncraft)
 
+![WynnWeaponViewerPreview](https://github.com/user-attachments/assets/f6695dd8-e962-4ad0-8ea1-b8393230a99f)
+
+
 ## What's Up
 
 - Zoom in on Wynncraft gear in your inventory
