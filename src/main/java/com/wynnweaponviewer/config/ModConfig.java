@@ -29,10 +29,14 @@ public class ModConfig implements ModMenuApi {
     private static class Config {
         boolean enabled = true;
         float scale = 0.4F;
-        HorizontalAlignment horizontalAlignment = HorizontalAlignment.RIGHT;  // Changed default to RIGHT
+        HorizontalAlignment horizontalAlignment = HorizontalAlignment.RIGHT;
         int xOffset = 0;
         int yOffset = 0;
-        boolean showToggleMessage = true;  // New option
+        boolean showToggleMessage = true;
+        boolean enableWeapons = true;
+        boolean enableArmor = true;
+        boolean enableAccessories = true;
+        boolean enableUnidentified = true;
     }
 
     public static boolean isEnabled() {
@@ -62,6 +66,22 @@ public class ModConfig implements ModMenuApi {
 
     public static boolean shouldShowToggleMessage() {
         return config.showToggleMessage;
+    }
+
+    public static boolean isWeaponsEnabled() {
+        return config.enableWeapons;
+    }
+
+    public static boolean isArmorEnabled() {
+        return config.enableArmor;
+    }
+
+    public static boolean isAccessoriesEnabled() {
+        return config.enableAccessories;
+    }
+
+    public static boolean isUnidentifiedEnabled() {
+        return config.enableUnidentified;
     }
 
     private static void loadConfig() {
@@ -152,6 +172,42 @@ public class ModConfig implements ModMenuApi {
                     .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.showToggleMessage.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.showToggleMessage = newValue;
+                        saveConfig();
+                    })
+                    .build());
+
+            general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.wynn_weapon_viewer.option.enableWeapons"), config.enableWeapons)
+                    .setDefaultValue(true)
+                    .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.enableWeapons.tooltip"))
+                    .setSaveConsumer(newValue -> {
+                        config.enableWeapons = newValue;
+                        saveConfig();
+                    })
+                    .build());
+
+            general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.wynn_weapon_viewer.option.enableArmor"), config.enableArmor)
+                    .setDefaultValue(true)
+                    .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.enableArmor.tooltip"))
+                    .setSaveConsumer(newValue -> {
+                        config.enableArmor = newValue;
+                        saveConfig();
+                    })
+                    .build());
+
+            general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.wynn_weapon_viewer.option.enableAccessories"), config.enableAccessories)
+                    .setDefaultValue(true)
+                    .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.enableAccessories.tooltip"))
+                    .setSaveConsumer(newValue -> {
+                        config.enableAccessories = newValue;
+                        saveConfig();
+                    })
+                    .build());
+
+            general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.wynn_weapon_viewer.option.enableUnidentified"), config.enableUnidentified)
+                    .setDefaultValue(true)
+                    .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.enableUnidentified.tooltip"))
+                    .setSaveConsumer(newValue -> {
+                        config.enableUnidentified = newValue;
                         saveConfig();
                     })
                     .build());

@@ -2,8 +2,8 @@
 	"schemaVersion": 1,
 	"id": "wynn_weapon_viewer",
 	"version": "${version}",
-	"name": "Wynn Weapon Viewer",
-	"description": "View Wynncraft weapons in big size.",
+	"name": "Wynn Weapon Bigger",
+	"description": "View your Wynncraft gear in big.",
 	"authors": [
 		"DrBiznes"
 	],

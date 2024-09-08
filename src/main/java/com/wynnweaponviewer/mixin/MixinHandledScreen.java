@@ -20,6 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.wynntils.core.components.Models;
 import com.wynntils.models.items.items.game.GearItem;
+import com.wynntils.models.gear.type.GearType;
 
 @Mixin(HandledScreen.class)
 public abstract class MixinHandledScreen extends Screen {
@@ -43,7 +44,7 @@ public abstract class MixinHandledScreen extends Screen {
 		if (WynnWeaponViewer.shouldRenderZoom()) {
 			ItemStack renderStack = determineRenderStack(mouseX, mouseY);
 			if (!renderStack.isEmpty()) {
-				renderZoomedWeapon(drawContext, renderStack);
+				renderZoomedItem(drawContext, renderStack);
 			}
 		}
 
@@ -57,14 +58,14 @@ public abstract class MixinHandledScreen extends Screen {
 	@Unique
 	private ItemStack determineRenderStack(int mouseX, int mouseY) {
 		ItemStack cursorStack = handler.getCursorStack();
-		if (!cursorStack.isEmpty() && isWynncraftWeapon(cursorStack)) {
+		if (!cursorStack.isEmpty() && isValidWynncraftItem(cursorStack)) {
 			return cursorStack;
 		}
 
 		Slot slot = getSlotAt(mouseX, mouseY);
 		if (slot != null) {
 			ItemStack slotStack = slot.getStack();
-			if (!slotStack.isEmpty() && isWynncraftWeapon(slotStack)) {
+			if (!slotStack.isEmpty() && isValidWynncraftItem(slotStack)) {
 				return slotStack;
 			}
 		}
@@ -73,14 +74,31 @@ public abstract class MixinHandledScreen extends Screen {
 	}
 
 	@Unique
-	private boolean isWynncraftWeapon(ItemStack itemStack) {
+	private boolean isValidWynncraftItem(ItemStack itemStack) {
 		return Models.Item.asWynnItem(itemStack, GearItem.class)
-				.map(gearItem -> gearItem.getGearType().isWeapon())
+				.map(gearItem -> {
+					GearType gearType = gearItem.getGearType();
+					if (gearType.isWeapon()) {
+						return ModConfig.isWeaponsEnabled();
+					} else if (gearType.isArmor()) {
+						return ModConfig.isArmorEnabled();
+					} else if (gearType == GearType.RING || gearType == GearType.BRACELET || gearType == GearType.NECKLACE) {
+						return ModConfig.isAccessoriesEnabled();
+					}
+					return false;
+				})
+				.orElse(false) || (ModConfig.isUnidentifiedEnabled() && isUnidentifiedItem(itemStack));
+	}
+
+	@Unique
+	private boolean isUnidentifiedItem(ItemStack itemStack) {
+		return Models.Item.asWynnItem(itemStack, GearItem.class)
+				.map(GearItem::isUnidentified)
 				.orElse(false);
 	}
 
 	@Unique
-	private void renderZoomedWeapon(DrawContext drawContext, ItemStack stack) {
+	private void renderZoomedItem(DrawContext drawContext, ItemStack stack) {
 		float scale = ModConfig.getScale();
 		float size = Math.min(x * scale, this.height * scale);
 		float itemScale = size / 16;
