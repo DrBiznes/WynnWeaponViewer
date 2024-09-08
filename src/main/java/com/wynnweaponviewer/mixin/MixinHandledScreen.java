@@ -21,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.wynntils.core.components.Models;
 import com.wynntils.models.items.items.game.GearItem;
 import com.wynntils.models.gear.type.GearType;
+import com.wynntils.models.items.items.game.GearBoxItem;
 
 @Mixin(HandledScreen.class)
 public abstract class MixinHandledScreen extends Screen {
@@ -92,9 +93,7 @@ public abstract class MixinHandledScreen extends Screen {
 
 	@Unique
 	private boolean isUnidentifiedItem(ItemStack itemStack) {
-		return Models.Item.asWynnItem(itemStack, GearItem.class)
-				.map(GearItem::isUnidentified)
-				.orElse(false);
+		return Models.Item.asWynnItem(itemStack, GearBoxItem.class).isPresent();
 	}
 
 	@Unique

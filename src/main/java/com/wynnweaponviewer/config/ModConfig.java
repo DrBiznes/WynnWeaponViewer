@@ -26,63 +26,29 @@ public class ModConfig implements ModMenuApi {
         loadConfig();
     }
 
-    private static class Config {
-        boolean enabled = true;
-        float scale = 0.4F;
-        HorizontalAlignment horizontalAlignment = HorizontalAlignment.RIGHT;
-        int xOffset = 0;
-        int yOffset = 0;
-        boolean showToggleMessage = true;
-        boolean enableWeapons = true;
-        boolean enableArmor = true;
-        boolean enableAccessories = true;
-        boolean enableUnidentified = true;
+    public static class Config {
+        public boolean enabled = true;
+        public float scale = 0.4F;
+        public HorizontalAlignment horizontalAlignment = HorizontalAlignment.RIGHT;
+        public int xOffset = 0;
+        public int yOffset = 0;
+        public boolean showToggleMessage = true;
+        public boolean enableWeapons = true;
+        public boolean enableArmor = false;
+        public boolean enableAccessories = false;
+        public boolean enableUnidentified = false;
     }
 
-    public static boolean isEnabled() {
-        return config.enabled;
-    }
-
-    public static void setEnabled(boolean enabled) {
-        config.enabled = enabled;
-        saveConfig();
-    }
-
-    public static float getScale() {
-        return config.scale;
-    }
-
-    public static HorizontalAlignment getHorizontalAlignment() {
-        return config.horizontalAlignment;
-    }
-
-    public static int getXOffset() {
-        return config.xOffset;
-    }
-
-    public static int getYOffset() {
-        return config.yOffset;
-    }
-
-    public static boolean shouldShowToggleMessage() {
-        return config.showToggleMessage;
-    }
-
-    public static boolean isWeaponsEnabled() {
-        return config.enableWeapons;
-    }
-
-    public static boolean isArmorEnabled() {
-        return config.enableArmor;
-    }
-
-    public static boolean isAccessoriesEnabled() {
-        return config.enableAccessories;
-    }
-
-    public static boolean isUnidentifiedEnabled() {
-        return config.enableUnidentified;
-    }
+    public static boolean isEnabled() { return config.enabled; }
+    public static float getScale() { return config.scale; }
+    public static HorizontalAlignment getHorizontalAlignment() { return config.horizontalAlignment; }
+    public static int getXOffset() { return config.xOffset; }
+    public static int getYOffset() { return config.yOffset; }
+    public static boolean shouldShowToggleMessage() { return config.showToggleMessage; }
+    public static boolean isWeaponsEnabled() { return config.enableWeapons; }
+    public static boolean isArmorEnabled() { return config.enableArmor; }
+    public static boolean isAccessoriesEnabled() { return config.enableAccessories; }
+    public static boolean isUnidentifiedEnabled() { return config.enableUnidentified; }
 
     private static void loadConfig() {
         if (CONFIG_FILE.exists()) {
@@ -186,7 +152,7 @@ public class ModConfig implements ModMenuApi {
                     .build());
 
             general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.wynn_weapon_viewer.option.enableArmor"), config.enableArmor)
-                    .setDefaultValue(true)
+                    .setDefaultValue(false)
                     .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.enableArmor.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.enableArmor = newValue;
@@ -195,7 +161,7 @@ public class ModConfig implements ModMenuApi {
                     .build());
 
             general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.wynn_weapon_viewer.option.enableAccessories"), config.enableAccessories)
-                    .setDefaultValue(true)
+                    .setDefaultValue(false)
                     .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.enableAccessories.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.enableAccessories = newValue;
@@ -204,7 +170,7 @@ public class ModConfig implements ModMenuApi {
                     .build());
 
             general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.wynn_weapon_viewer.option.enableUnidentified"), config.enableUnidentified)
-                    .setDefaultValue(true)
+                    .setDefaultValue(false)
                     .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.enableUnidentified.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.enableUnidentified = newValue;
