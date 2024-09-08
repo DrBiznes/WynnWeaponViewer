@@ -19,6 +19,12 @@ I make your weapon big, duh. A fork of [Big Items, Duh](https://modrinth.com/mod
 3. Download the latest version of Wynncraft Weapon Viewer from the versions page
 4. Place the downloaded .jar file in your Minecraft mods folder
 
+## Future Features
+
+- Special effects for shiny and mythic items
+- Wynntils item borders
+- Suggest features on the GitHub issues page!
+
 ## Configuration
 
 You can configure WWB through the Mod Menu interface or config file:
@@ -40,7 +46,7 @@ You can configure WWB through the Mod Menu interface or config file:
 - Minecraft 1.21
 - Fabric Loader 0.16.0 or higher
 - Fabric API
-- Distant Horizons 2.2 or higher
+- Wynntils 2.1.1 or higher
 - Mod Menu
 
 ## Go Ham
