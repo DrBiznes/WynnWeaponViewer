@@ -26,6 +26,7 @@ You can configure WWB through the Mod Menu interface or config file:
 1. Install [Mod Menu](https://modrinth.com/mod/modmenu) if you haven't already.
 2. In the game, go to Mods -> Find "Wynn Weapon Bigger" -> Click "Configure".
 3. Adjust settings such as zoom scale, position, and toggle message visibility.
+4. Toggle weapon, armor, accessory, and un-id box zoom separately.
 
 ## Usage
 
