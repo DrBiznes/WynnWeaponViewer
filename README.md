@@ -11,6 +11,7 @@ I make your weapon big, duh. A fork of [Big Items, Duh](https://modrinth.com/mod
 - Toggle gear zoom functionality with a keybind
 - Uses Wynntils mod to detect Wynncraft weapons and gear
 - Tooltips always display on top of zoomed weapons
+- Works great with [Immersive UI](https://modrinth.com/mod/immersive-ui)
 
 ## Installation
 
