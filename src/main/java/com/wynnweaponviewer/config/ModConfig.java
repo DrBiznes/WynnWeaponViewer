@@ -50,6 +50,11 @@ public class ModConfig implements ModMenuApi {
     public static boolean isAccessoriesEnabled() { return config.enableAccessories; }
     public static boolean isUnidentifiedEnabled() { return config.enableUnidentified; }
 
+    public static void setEnabled(boolean enabled) {
+        config.enabled = enabled;
+        saveConfig();
+    }
+
     private static void loadConfig() {
         if (CONFIG_FILE.exists()) {
             try (FileReader reader = new FileReader(CONFIG_FILE)) {

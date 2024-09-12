@@ -8,8 +8,9 @@
 		"DrBiznes"
 	],
 	"contact": {
-		"homepage": "https://github.com/bob10234/WynnWeaponViewer",
-		"sources": "https://github.com/bob10234/WynnWeaponViewer"
+		"homepage": "https://modrinth.com/mod/wynnweaponbigger",
+		"sources": "https://github.com/bob10234/WynnWeaponViewer",
+		"issues": "https://github.com/DrBiznes/WynnWeaponViewer/issues"
 	},
 	"license": "MIT",
 	"icon": "assets/wynn_weapon_viewer/icon.png",
@@ -32,5 +33,12 @@
 		"fabric-api": "*",
 		"cloth-config": ">=15.0.130",
 		"wynntils": ">=2.1.1"
+	},
+	"custom": {
+		"modmenu": {
+			"links": {
+				"modmenu.discord": "https://discord.gg/jqFF64rXZZ"
+			}
+		}
 	}
 }
