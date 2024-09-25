@@ -24,7 +24,9 @@
 	"config.wynn_weapon_viewer.option.enableAccessories.tooltip": "Enable zoom for Wynncraft accessories",
 	"config.wynn_weapon_viewer.option.enableUnidentified": "Enable for Unidentified Items",
 	"config.wynn_weapon_viewer.option.enableUnidentified.tooltip": "Enable zoom for unidentified Wynncraft items",
-
+	"config.wynn_weapon_viewer.option.enableCorkianAmplifiers": "Enable for Corkian Amplifiers",
+	"config.wynn_weapon_viewer.option.enableCorkianAmplifiers.tooltip": "Enable zoom for Corkian Amplifiers and related items",
 	"config.wynn_weapon_viewer.option.alignment.left": "Left",
 	"config.wynn_weapon_viewer.option.alignment.right": "Right"
+
 }

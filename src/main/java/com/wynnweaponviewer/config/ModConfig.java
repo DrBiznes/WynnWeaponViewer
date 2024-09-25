@@ -37,6 +37,7 @@ public class ModConfig implements ModMenuApi {
         public boolean enableArmor = false;
         public boolean enableAccessories = false;
         public boolean enableUnidentified = false;
+        public boolean enableCorkianAmplifiers = false;
     }
 
     public static boolean isEnabled() { return config.enabled; }
@@ -49,6 +50,7 @@ public class ModConfig implements ModMenuApi {
     public static boolean isArmorEnabled() { return config.enableArmor; }
     public static boolean isAccessoriesEnabled() { return config.enableAccessories; }
     public static boolean isUnidentifiedEnabled() { return config.enableUnidentified; }
+    public static boolean isCorkianAmplifiersEnabled() { return config.enableCorkianAmplifiers; }
 
     public static void setEnabled(boolean enabled) {
         config.enabled = enabled;
@@ -179,6 +181,15 @@ public class ModConfig implements ModMenuApi {
                     .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.enableUnidentified.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.enableUnidentified = newValue;
+                        saveConfig();
+                    })
+                    .build());
+
+            general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.wynn_weapon_viewer.option.enableCorkianAmplifiers"), config.enableCorkianAmplifiers)
+                    .setDefaultValue(false)
+                    .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.enableCorkianAmplifiers.tooltip"))
+                    .setSaveConsumer(newValue -> {
+                        config.enableCorkianAmplifiers = newValue;
                         saveConfig();
                     })
                     .build());

@@ -23,6 +23,9 @@ import com.wynntils.models.items.items.game.GearItem;
 import com.wynntils.models.gear.type.GearType;
 import com.wynntils.models.items.items.game.GearBoxItem;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Mixin(HandledScreen.class)
 public abstract class MixinHandledScreen extends Screen {
 	@Shadow
@@ -35,6 +38,15 @@ public abstract class MixinHandledScreen extends Screen {
 	protected int x;
 
 	@Shadow @Final protected ScreenHandler handler;
+
+	@Unique
+	private static final List<String> CORKIAN_AMPLIFIER_NAMES = Arrays.asList(
+			"Corkian Insulator",
+			"Corkian Amplifier I",
+			"Corkian Amplifier II",
+			"Corkian Amplifier III",
+			"Corkian Simulator"
+	);
 
 	protected MixinHandledScreen(Text title) {
 		super(title);
@@ -88,12 +100,20 @@ public abstract class MixinHandledScreen extends Screen {
 					}
 					return false;
 				})
-				.orElse(false) || (ModConfig.isUnidentifiedEnabled() && isUnidentifiedItem(itemStack));
+				.orElse(false)
+				|| (ModConfig.isUnidentifiedEnabled() && isUnidentifiedItem(itemStack))
+				|| (ModConfig.isCorkianAmplifiersEnabled() && isCorkianAmplifier(itemStack));
 	}
 
 	@Unique
 	private boolean isUnidentifiedItem(ItemStack itemStack) {
 		return Models.Item.asWynnItem(itemStack, GearBoxItem.class).isPresent();
+	}
+
+	@Unique
+	private boolean isCorkianAmplifier(ItemStack itemStack) {
+		String displayName = itemStack.getName().getString();
+		return CORKIAN_AMPLIFIER_NAMES.stream().anyMatch(displayName::contains);
 	}
 
 	@Unique
