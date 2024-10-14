@@ -10,6 +10,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.text.Text;
+import net.minecraft.text.Style;
+import net.minecraft.text.TextColor;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -48,6 +50,9 @@ public abstract class MixinHandledScreen extends Screen {
 			"Corkian Simulator"
 	);
 
+	@Unique
+	private static final int MYTHIC_COLOR = 0x5A0093; // Dark purple color for mythic items
+
 	protected MixinHandledScreen(Text title) {
 		super(title);
 	}
@@ -57,7 +62,8 @@ public abstract class MixinHandledScreen extends Screen {
 		if (WynnWeaponViewer.shouldRenderZoom()) {
 			ItemStack renderStack = determineRenderStack(mouseX, mouseY);
 			if (!renderStack.isEmpty()) {
-				renderZoomedItem(drawContext, renderStack);
+				int backgroundColor = getItemNameColor(renderStack);
+				renderZoomedItem(drawContext, renderStack, backgroundColor);
 			}
 		}
 
@@ -117,7 +123,32 @@ public abstract class MixinHandledScreen extends Screen {
 	}
 
 	@Unique
-	private void renderZoomedItem(DrawContext drawContext, ItemStack stack) {
+	private int getItemNameColor(ItemStack itemStack) {
+		Text displayName = itemStack.getName();
+		String rawName = displayName.getString();
+
+		// Check if the item is a mythic item
+		if (isMythicItem(rawName)) {
+			return MYTHIC_COLOR;
+		}
+
+		Style style = displayName.getStyle();
+		TextColor textColor = style.getColor();
+		if (textColor == null) {
+			return 0xFFFFFF; // Default to white if no color is specified
+		}
+		return textColor.getRgb();
+	}
+
+	@Unique
+	private boolean isMythicItem(String itemName) {
+		// Check for characteristics of mythic items
+		// This might need adjustment based on exact Wynncraft naming conventions
+		return itemName.startsWith("§5") || itemName.contains("Mythic");
+	}
+
+	@Unique
+	private void renderZoomedItem(DrawContext drawContext, ItemStack stack, int backgroundColor) {
 		float scale = ModConfig.getScale();
 		float size = Math.min(x * scale, this.height * scale);
 		float itemScale = size / 16;
@@ -131,10 +162,34 @@ public abstract class MixinHandledScreen extends Screen {
 		ix += ModConfig.getXOffset();
 		iy += ModConfig.getYOffset();
 
+		// Render background oval
 		drawContext.getMatrices().push();
-		drawContext.getMatrices().translate(ix, iy, 0);  // Set z-index to 0
+		drawContext.getMatrices().translate(ix, iy, 0);
+		drawContext.getMatrices().scale(itemScale, itemScale, 1f);
+		drawOvalBackground(drawContext, 0, 0, 16, 16, backgroundColor);
+		drawContext.getMatrices().pop();
+
+		// Render item
+		drawContext.getMatrices().push();
+		drawContext.getMatrices().translate(ix, iy, 0);
 		drawContext.getMatrices().scale(itemScale, itemScale, 1f);
 		drawItem(drawContext, stack, 0, 0, "");
 		drawContext.getMatrices().pop();
+	}
+
+	@Unique
+	private void drawOvalBackground(DrawContext drawContext, int x, int y, int width, int height, int color) {
+		int alpha = 128; // 50% opacity
+		int ovalColor = (color & 0x00FFFFFF) | (alpha << 24);
+
+		for (int i = 0; i < width; i++) {
+			for (int j = 0; j < height; j++) {
+				float dx = (i - width / 2f) / (width / 2f);
+				float dy = (j - height / 2f) / (height / 2f);
+				if (dx * dx + dy * dy <= 1) {
+					drawContext.fill(x + i, y + j, x + i + 1, y + j + 1, ovalColor);
+				}
+			}
+		}
 	}
 }
