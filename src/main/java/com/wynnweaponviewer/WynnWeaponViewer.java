@@ -14,7 +14,6 @@ import org.apache.logging.log4j.Logger;
 
 public class WynnWeaponViewer implements ClientModInitializer {
 	public static final Logger LOGGER = LogManager.getLogger("WynnWeaponViewer");
-
 	public static final String MOD_ID = "wynn_weapon_viewer";
 
 	private static KeyBinding toggleZoomKey;

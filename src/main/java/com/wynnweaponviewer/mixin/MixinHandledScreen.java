@@ -3,6 +3,8 @@ package com.wynnweaponviewer.mixin;
 import com.wynnweaponviewer.WynnWeaponViewer;
 import com.wynnweaponviewer.config.ModConfig;
 import com.wynnweaponviewer.HorizontalAlignment;
+import com.wynntils.utils.mc.LoreUtils;
+import com.wynntils.core.text.StyledText;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
@@ -23,8 +25,8 @@ import com.wynntils.models.items.items.game.GearItem;
 import com.wynntils.models.gear.type.GearType;
 import com.wynntils.models.items.items.game.GearBoxItem;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Mixin(HandledScreen.class)
 public abstract class MixinHandledScreen extends Screen {
@@ -40,13 +42,9 @@ public abstract class MixinHandledScreen extends Screen {
 	@Shadow @Final protected ScreenHandler handler;
 
 	@Unique
-	private static final List<String> CORKIAN_AMPLIFIER_NAMES = Arrays.asList(
-			"Corkian Insulator",
-			"Corkian Amplifier I",
-			"Corkian Amplifier II",
-			"Corkian Amplifier III",
-			"Corkian Simulator"
-	);
+	private static final Pattern EXPIRED_PATTERN = Pattern.compile(".*Expired -.*");
+	@Unique
+	private static final Pattern FULFILLED_PATTERN = Pattern.compile(".*Fulfilled -.*");
 
 	protected MixinHandledScreen(Text title) {
 		super(title);
@@ -71,19 +69,31 @@ public abstract class MixinHandledScreen extends Screen {
 	@Unique
 	private ItemStack determineRenderStack(int mouseX, int mouseY) {
 		ItemStack cursorStack = handler.getCursorStack();
-		if (!cursorStack.isEmpty() && isValidWynncraftItem(cursorStack)) {
+		if (!cursorStack.isEmpty() && isValidWynncraftItem(cursorStack) && !isTradeMarketSoldItem(cursorStack)) {
 			return cursorStack;
 		}
 
 		Slot slot = getSlotAt(mouseX, mouseY);
 		if (slot != null) {
 			ItemStack slotStack = slot.getStack();
-			if (!slotStack.isEmpty() && isValidWynncraftItem(slotStack)) {
+			if (!slotStack.isEmpty() && isValidWynncraftItem(slotStack) && !isTradeMarketSoldItem(slotStack)) {
 				return slotStack;
 			}
 		}
 
 		return ItemStack.EMPTY;
+	}
+
+	@Unique
+	private boolean isTradeMarketSoldItem(ItemStack itemStack) {
+		List<StyledText> lore = LoreUtils.getLore(itemStack);
+		if (!lore.isEmpty()) {
+			StyledText firstLine = lore.get(0);
+			String plainText = firstLine.getStringWithoutFormatting(); // Gets text without color codes
+			return EXPIRED_PATTERN.matcher(plainText).matches() ||
+					FULFILLED_PATTERN.matcher(plainText).matches();
+		}
+		return false;
 	}
 
 	@Unique
@@ -100,20 +110,12 @@ public abstract class MixinHandledScreen extends Screen {
 					}
 					return false;
 				})
-				.orElse(false)
-				|| (ModConfig.isUnidentifiedEnabled() && isUnidentifiedItem(itemStack))
-				|| (ModConfig.isCorkianAmplifiersEnabled() && isCorkianAmplifier(itemStack));
+				.orElse(false) || (ModConfig.isUnidentifiedEnabled() && isUnidentifiedItem(itemStack));
 	}
 
 	@Unique
 	private boolean isUnidentifiedItem(ItemStack itemStack) {
 		return Models.Item.asWynnItem(itemStack, GearBoxItem.class).isPresent();
-	}
-
-	@Unique
-	private boolean isCorkianAmplifier(ItemStack itemStack) {
-		String displayName = itemStack.getName().getString();
-		return CORKIAN_AMPLIFIER_NAMES.stream().anyMatch(displayName::contains);
 	}
 
 	@Unique
