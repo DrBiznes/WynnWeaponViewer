@@ -3,7 +3,7 @@
 ![WynnWeaponBiggerBanner](https://github.com/user-attachments/assets/443188e9-20e3-4aa0-a001-60ad3e3daa22)
 
 
-I make your weapon big, duh. A fork of [Big Items, Duh](https://modrinth.com/mod/big-items-duh) designed to only show Wynncraft gear and updated to 1.21. This will be more useful once CITResewn updates. Made for my modpack [World of Wynncraft](https://modrinth.com/modpack/world-of-wynncraft)
+I make your weapon big, duh. A fork of [Big Items, Duh](https://modrinth.com/mod/big-items-duh) designed to only show Wynncraft gear and updated to 1.21. Made for my modpack [World of Wynncraft](https://modrinth.com/modpack/world-of-wynncraft)
 
 ![WynnWeaponViewerPreview](https://github.com/user-attachments/assets/f6695dd8-e962-4ad0-8ea1-b8393230a99f)
 
@@ -66,6 +66,17 @@ You can configure WWB through the Mod Menu interface or config file:
 - Thanks to the Wynncraft team
 - Thanks to IgbarvonSquid
 
-## Support
+## Support and My Mods
+Please report any bugs or feature suggestions on the Github Issues page, I'll be updating this frequently with community feedback and ideas! You can also [join my discord](https://discord.gg/jqFF64rXZZ) if you need direct support, or want to stay updated with all of my mods.
+### Check out all my projects!
+>   [World of Wynncraft Modpack](https://modrinth.com/modpack/world-of-wynncraft)
 
-If you encounter any issues or have any questions, please open an issue on the GitHub repository.
+>   [WynnVista](https://modrinth.com/mod/wynnvista)
+
+>   [Wynn Weapon Bigger](https://modrinth.com/mod/wynnweaponbigger)
+
+>   [Nimble ReWynnded](https://modrinth.com/mod/nimble-rewynnded)
+
+>   [Class Keybind Profiles](https://modrinth.com/mod/class-keybind-profiles)
+
+>   [WynnBubbles](https://modrinth.com/mod/wynnbubbles)
