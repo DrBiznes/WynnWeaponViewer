@@ -3,7 +3,7 @@
 ![WynnWeaponBiggerBanner](https://github.com/user-attachments/assets/443188e9-20e3-4aa0-a001-60ad3e3daa22)
 
 
-I make your weapon big, duh. A fork of [Big Items, Duh](https://modrinth.com/mod/big-items-duh) designed to only show Wynncraft gear and updated to 1.21. Made for my modpack [World of Wynncraft](https://modrinth.com/modpack/world-of-wynncraft)
+I make your weapon big, duh. A fork of [Big Items, Duh](https://modrinth.com/mod/big-items-duh) designed to only show Wynncraft gear and updated to 1.21.4. Made for my modpack [World of Wynncraft](https://modrinth.com/modpack/world-of-wynncraft)
 
 ![WynnWeaponViewerPreview](https://github.com/user-attachments/assets/f6695dd8-e962-4ad0-8ea1-b8393230a99f)
 
@@ -20,7 +20,7 @@ I make your weapon big, duh. A fork of [Big Items, Duh](https://modrinth.com/mod
 ## Installation
 
 1. Make sure you have Fabric Loader and Fabric API installed
-2. Download and install version 2.1.1 or later of Wynntils
+2. Download and install version 3.0.3 or later of Wynntils
 3. Download the latest version of Wynncraft Weapon Bigger from the versions page
 4. Place the downloaded .jar file in your Minecraft mods folder
 
