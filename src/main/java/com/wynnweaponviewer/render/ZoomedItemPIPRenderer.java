@@ -32,11 +32,11 @@ public class ZoomedItemPIPRenderer extends PictureInPictureRenderer<ZoomedItemRe
     }
 
     // Scale factor to fit larger Wynncraft weapon models within the viewbox
-    private static final float MODEL_SCALE = 0.65F;
+    private static final float MODEL_SCALE = 0.50F;
 
     @Override
     protected void renderToTexture(ZoomedItemRenderState state, PoseStack poseStack) {
-        // Scale down the model to fit larger Wynncraft weapons
+        // Scale down the model slightly to fit larger Wynncraft weapons
         poseStack.scale(MODEL_SCALE, -MODEL_SCALE, -MODEL_SCALE);
 
         if (state.rotation() != 0) {
