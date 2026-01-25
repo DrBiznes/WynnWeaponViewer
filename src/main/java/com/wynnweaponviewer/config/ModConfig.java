@@ -9,7 +9,7 @@ import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 import java.io.File;
 import java.io.FileReader;
@@ -26,13 +26,39 @@ public class ModConfig implements ModMenuApi {
         loadConfig();
     }
 
+    public enum AppearAnimation {
+        NONE,
+        FADE,
+        SCALE,
+        SLIDE_LEFT,
+        SLIDE_RIGHT,
+        SLIDE_TOP,
+        SLIDE_BOTTOM
+    }
+
+    public enum IdleAnimation {
+        NONE,
+        SWING,
+        PULSE
+    }
+
     public static class Config {
+        // General settings
         public boolean enabled = true;
         public float scale = 0.4F;
         public HorizontalAlignment horizontalAlignment = HorizontalAlignment.RIGHT;
         public int xOffset = 0;
         public int yOffset = 0;
         public boolean showToggleMessage = true;
+
+        // Animation settings (from ItemZoomer)
+        public AppearAnimation appearAnimation = AppearAnimation.FADE;
+        public IdleAnimation idleAnimation = IdleAnimation.NONE;
+        public int appearDelayMs = 250;
+        public boolean showItemInfo = true;
+        public int infoDelaySeconds = 2;
+
+        // Wynncraft item type filters
         public boolean enableWeapons = true;
         public boolean enableArmor = false;
         public boolean enableAccessories = false;
@@ -40,6 +66,7 @@ public class ModConfig implements ModMenuApi {
         public boolean enableCorkianAmplifiers = false;
     }
 
+    public static Config getConfig() { return config; }
     public static boolean isEnabled() { return config.enabled; }
     public static float getScale() { return config.scale; }
     public static HorizontalAlignment getHorizontalAlignment() { return config.horizontalAlignment; }
@@ -84,110 +111,161 @@ public class ModConfig implements ModMenuApi {
         return parent -> {
             ConfigBuilder builder = ConfigBuilder.create()
                     .setParentScreen(parent)
-                    .setTitle(Text.translatable("config.wynn_weapon_viewer.title"));
+                    .setTitle(Component.translatable("config.wynn_weapon_viewer.title"));
 
-            ConfigCategory general = builder.getOrCreateCategory(Text.translatable("config.wynn_weapon_viewer.category.general"));
+            ConfigCategory general = builder.getOrCreateCategory(Component.translatable("config.wynn_weapon_viewer.category.general"));
+            ConfigCategory animations = builder.getOrCreateCategory(Component.translatable("config.wynn_weapon_viewer.category.animations"));
+            ConfigCategory filters = builder.getOrCreateCategory(Component.translatable("config.wynn_weapon_viewer.category.filters"));
 
             ConfigEntryBuilder entryBuilder = builder.entryBuilder();
-            general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.wynn_weapon_viewer.option.enabled"), config.enabled)
+
+            // General settings
+            general.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.wynn_weapon_viewer.option.enabled"), config.enabled)
                     .setDefaultValue(true)
-                    .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.enabled.tooltip"))
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.enabled.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.enabled = newValue;
                         saveConfig();
                     })
                     .build());
 
-            general.addEntry(entryBuilder.startFloatField(Text.translatable("config.wynn_weapon_viewer.option.scale"), config.scale)
+            general.addEntry(entryBuilder.startFloatField(Component.translatable("config.wynn_weapon_viewer.option.scale"), config.scale)
                     .setDefaultValue(0.4F)
                     .setMin(0.1F)
                     .setMax(1.0F)
-                    .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.scale.tooltip"))
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.scale.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.scale = newValue;
                         saveConfig();
                     })
                     .build());
 
-            general.addEntry(entryBuilder.startEnumSelector(Text.translatable("config.wynn_weapon_viewer.option.alignment"), HorizontalAlignment.class, config.horizontalAlignment)
+            general.addEntry(entryBuilder.startEnumSelector(Component.translatable("config.wynn_weapon_viewer.option.alignment"), HorizontalAlignment.class, config.horizontalAlignment)
                     .setDefaultValue(HorizontalAlignment.RIGHT)
-                    .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.alignment.tooltip"))
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.alignment.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.horizontalAlignment = newValue;
                         saveConfig();
                     })
                     .build());
 
-            general.addEntry(entryBuilder.startIntField(Text.translatable("config.wynn_weapon_viewer.option.xOffset"), config.xOffset)
+            general.addEntry(entryBuilder.startIntField(Component.translatable("config.wynn_weapon_viewer.option.xOffset"), config.xOffset)
                     .setDefaultValue(0)
                     .setMin(-500)
                     .setMax(500)
-                    .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.xOffset.tooltip"))
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.xOffset.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.xOffset = newValue;
                         saveConfig();
                     })
                     .build());
 
-            general.addEntry(entryBuilder.startIntField(Text.translatable("config.wynn_weapon_viewer.option.yOffset"), config.yOffset)
+            general.addEntry(entryBuilder.startIntField(Component.translatable("config.wynn_weapon_viewer.option.yOffset"), config.yOffset)
                     .setDefaultValue(0)
                     .setMin(-500)
                     .setMax(500)
-                    .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.yOffset.tooltip"))
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.yOffset.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.yOffset = newValue;
                         saveConfig();
                     })
                     .build());
 
-            general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.wynn_weapon_viewer.option.showToggleMessage"), config.showToggleMessage)
+            general.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.wynn_weapon_viewer.option.showToggleMessage"), config.showToggleMessage)
                     .setDefaultValue(true)
-                    .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.showToggleMessage.tooltip"))
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.showToggleMessage.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.showToggleMessage = newValue;
                         saveConfig();
                     })
                     .build());
 
-            general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.wynn_weapon_viewer.option.enableWeapons"), config.enableWeapons)
+            // Animation settings
+            animations.addEntry(entryBuilder.startEnumSelector(Component.translatable("config.wynn_weapon_viewer.option.appearAnimation"), AppearAnimation.class, config.appearAnimation)
+                    .setDefaultValue(AppearAnimation.FADE)
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.appearAnimation.tooltip"))
+                    .setSaveConsumer(newValue -> {
+                        config.appearAnimation = newValue;
+                        saveConfig();
+                    })
+                    .build());
+
+            animations.addEntry(entryBuilder.startEnumSelector(Component.translatable("config.wynn_weapon_viewer.option.idleAnimation"), IdleAnimation.class, config.idleAnimation)
+                    .setDefaultValue(IdleAnimation.NONE)
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.idleAnimation.tooltip"))
+                    .setSaveConsumer(newValue -> {
+                        config.idleAnimation = newValue;
+                        saveConfig();
+                    })
+                    .build());
+
+            animations.addEntry(entryBuilder.startIntSlider(Component.translatable("config.wynn_weapon_viewer.option.appearDelayMs"), config.appearDelayMs, 0, 1000)
+                    .setDefaultValue(250)
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.appearDelayMs.tooltip"))
+                    .setSaveConsumer(newValue -> {
+                        config.appearDelayMs = newValue;
+                        saveConfig();
+                    })
+                    .build());
+
+            animations.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.wynn_weapon_viewer.option.showItemInfo"), config.showItemInfo)
                     .setDefaultValue(true)
-                    .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.enableWeapons.tooltip"))
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.showItemInfo.tooltip"))
+                    .setSaveConsumer(newValue -> {
+                        config.showItemInfo = newValue;
+                        saveConfig();
+                    })
+                    .build());
+
+            animations.addEntry(entryBuilder.startIntSlider(Component.translatable("config.wynn_weapon_viewer.option.infoDelaySeconds"), config.infoDelaySeconds, 0, 10)
+                    .setDefaultValue(2)
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.infoDelaySeconds.tooltip"))
+                    .setSaveConsumer(newValue -> {
+                        config.infoDelaySeconds = newValue;
+                        saveConfig();
+                    })
+                    .build());
+
+            // Wynncraft item type filters
+            filters.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.wynn_weapon_viewer.option.enableWeapons"), config.enableWeapons)
+                    .setDefaultValue(true)
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.enableWeapons.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.enableWeapons = newValue;
                         saveConfig();
                     })
                     .build());
 
-            general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.wynn_weapon_viewer.option.enableArmor"), config.enableArmor)
+            filters.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.wynn_weapon_viewer.option.enableArmor"), config.enableArmor)
                     .setDefaultValue(false)
-                    .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.enableArmor.tooltip"))
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.enableArmor.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.enableArmor = newValue;
                         saveConfig();
                     })
                     .build());
 
-            general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.wynn_weapon_viewer.option.enableAccessories"), config.enableAccessories)
+            filters.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.wynn_weapon_viewer.option.enableAccessories"), config.enableAccessories)
                     .setDefaultValue(false)
-                    .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.enableAccessories.tooltip"))
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.enableAccessories.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.enableAccessories = newValue;
                         saveConfig();
                     })
                     .build());
 
-            general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.wynn_weapon_viewer.option.enableUnidentified"), config.enableUnidentified)
+            filters.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.wynn_weapon_viewer.option.enableUnidentified"), config.enableUnidentified)
                     .setDefaultValue(false)
-                    .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.enableUnidentified.tooltip"))
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.enableUnidentified.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.enableUnidentified = newValue;
                         saveConfig();
                     })
                     .build());
 
-            general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.wynn_weapon_viewer.option.enableCorkianAmplifiers"), config.enableCorkianAmplifiers)
+            filters.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.wynn_weapon_viewer.option.enableCorkianAmplifiers"), config.enableCorkianAmplifiers)
                     .setDefaultValue(false)
-                    .setTooltip(Text.translatable("config.wynn_weapon_viewer.option.enableCorkianAmplifiers.tooltip"))
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.enableCorkianAmplifiers.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.enableCorkianAmplifiers = newValue;
                         saveConfig();
