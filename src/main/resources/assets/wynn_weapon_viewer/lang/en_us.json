@@ -30,6 +30,8 @@
 	"config.wynn_weapon_viewer.option.showItemInfo.tooltip": "Show item name, description and stats below the preview",
 	"config.wynn_weapon_viewer.option.infoDelaySeconds": "Info Delay (seconds)",
 	"config.wynn_weapon_viewer.option.infoDelaySeconds.tooltip": "Delay before showing item info",
+	"config.wynn_weapon_viewer.option.itemNameAbove": "Item Name Above",
+	"config.wynn_weapon_viewer.option.itemNameAbove.tooltip": "Show the item name above the preview instead of below",
 
 	"config.wynn_weapon_viewer.option.enableWeapons": "Enable for Weapons",
 	"config.wynn_weapon_viewer.option.enableWeapons.tooltip": "Enable zoom for Wynncraft weapons",

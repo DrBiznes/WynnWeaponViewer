@@ -56,7 +56,8 @@ public class ModConfig implements ModMenuApi {
         public IdleAnimation idleAnimation = IdleAnimation.NONE;
         public int appearDelayMs = 250;
         public boolean showItemInfo = true;
-        public int infoDelaySeconds = 2;
+        public int infoDelaySeconds = 0;
+        public boolean itemNameAbove = false;
 
         // Wynncraft item type filters
         public boolean enableWeapons = true;
@@ -218,10 +219,19 @@ public class ModConfig implements ModMenuApi {
                     .build());
 
             animations.addEntry(entryBuilder.startIntSlider(Component.translatable("config.wynn_weapon_viewer.option.infoDelaySeconds"), config.infoDelaySeconds, 0, 10)
-                    .setDefaultValue(2)
+                    .setDefaultValue(0)
                     .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.infoDelaySeconds.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.infoDelaySeconds = newValue;
+                        saveConfig();
+                    })
+                    .build());
+
+            animations.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.wynn_weapon_viewer.option.itemNameAbove"), config.itemNameAbove)
+                    .setDefaultValue(false)
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.itemNameAbove.tooltip"))
+                    .setSaveConsumer(newValue -> {
+                        config.itemNameAbove = newValue;
                         saveConfig();
                     })
                     .build());

@@ -86,7 +86,7 @@ public class AnimationState {
         float hoverDuration = getHoverDuration();
         if (hoverDuration < delaySeconds) return 0.0f;
 
-        float textAnimDuration = 0.3f;
+        float textAnimDuration = 0.15f;
         float timeSinceDelay = hoverDuration - delaySeconds;
         return Math.min(1.0f, timeSinceDelay / textAnimDuration);
     }

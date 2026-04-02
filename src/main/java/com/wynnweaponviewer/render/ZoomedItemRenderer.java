@@ -167,8 +167,8 @@ public class ZoomedItemRenderer {
         itemY += config.yOffset;
 
         float textX = itemX;
-        int textGap = 12;
-        float textY = itemY + itemSize + textGap;
+        int textGap = 8;
+        float textY = itemY + itemSize - (itemSize * 0.07f) - textGap;
 
         float eased = easeOutCubic(progress);
         float alpha = 1.0f;
@@ -209,6 +209,9 @@ public class ZoomedItemRenderer {
         float finalItemY = itemY + offsetY + (itemSize - scaledSize) / 2.0f;
         float finalTextX = textX + offsetX;
         float finalTextY = textY + offsetY;
+        float baseTextScale = config.scale * 2.5f;
+        float nameLineHeight = 10 * baseTextScale;
+        float finalNameAboveY = finalItemY - textGap - nameLineHeight;
 
         boolean showInfo = config.showItemInfo && animationState.shouldShowInfo(config.infoDelaySeconds);
         float textAlpha = showInfo ? easeOutCubic(animationState.getTextAppearProgress(config.infoDelaySeconds)) : 0;
@@ -233,7 +236,7 @@ public class ZoomedItemRenderer {
         ((GuiRenderStateAccessor) guiRenderState).wynnweapon$submitPictureInPicture(state);
 
         if (showInfo && textAlpha > 0) {
-            renderItemInfo(graphics, mc, stack, finalTextX, finalTextY, itemSize, textAlpha * alpha);
+            renderItemInfo(graphics, mc, stack, finalTextX, finalTextY, finalNameAboveY, itemSize, textAlpha * alpha, config.scale, config.itemNameAbove);
         }
     }
 
@@ -250,7 +253,7 @@ public class ZoomedItemRenderer {
     }
 
     private static void renderItemInfo(GuiGraphics graphics, Minecraft mc, ItemStack stack,
-                                       float x, float y, int itemSize, float alpha) {
+                                       float x, float y, float nameAboveY, int itemSize, float alpha, float zoomScale, boolean nameAbove) {
         if (alpha <= 0) return;
 
         Font font = mc.font;
@@ -259,6 +262,9 @@ public class ZoomedItemRenderer {
         if (tooltip.isEmpty()) return;
 
         int textAlphaInt = (int) (alpha * 255);
+
+        // Base text scale influenced by zoom scale setting
+        float baseTextScale = zoomScale * 2.5f; // Multiplier to make text reasonably sized
 
         int screenHeight = mc.getWindow().getGuiScaledHeight();
         int availableHeight = (int) (screenHeight - y - 10);
@@ -269,20 +275,46 @@ public class ZoomedItemRenderer {
 
         int maxWidth = Math.max(itemSize, 100);
 
-        int totalHeight = calculateTextHeight(font, tooltip, tooltip.size(), maxWidth);
+        int totalHeight = calculateTextHeight(font, tooltip, tooltip.size(), maxWidth, baseTextScale);
         boolean showExtras = totalHeight <= availableHeight;
         int linesToRender = showExtras ? tooltip.size() : essentialLines;
 
-        float currentY = y;
+        // If name above is enabled, render line 0 (item name) above the item separately
+        int startI = 0;
         int sourceLineIndex = 0;
+        if (nameAbove && !tooltip.isEmpty()) {
+            Component nameLine = tooltip.get(0);
+            String plainText = nameLine.getString();
+            if (!plainText.trim().isEmpty()) {
+                float lineScale = baseTextScale;
+                int color = ARGB.color(textAlphaInt, 0xFF, 0xFF, 0xFF);
+                int scaledMaxWidth = (int) (maxWidth / lineScale);
+                List<FormattedCharSequence> wrappedLines = font.split(nameLine, scaledMaxWidth);
+                float ny = nameAboveY;
+                for (FormattedCharSequence wrappedLine : wrappedLines) {
+                    int lineWidth = font.width(wrappedLine);
+                    float drawX = x + (itemSize - lineWidth * lineScale) / 2;
+                    graphics.pose().pushMatrix();
+                    graphics.pose().translate(drawX, ny);
+                    graphics.pose().scale(lineScale, lineScale);
+                    graphics.drawString(font, wrappedLine, 0, 0, color, false);
+                    graphics.pose().popMatrix();
+                    ny += (int) (10 * lineScale);
+                }
+                startI = 1;
+                sourceLineIndex = 1;
+            }
+        }
 
-        for (int i = 0; i < tooltip.size() && sourceLineIndex < linesToRender; i++) {
+        float currentY = y;
+
+        for (int i = startI; i < tooltip.size() && sourceLineIndex < linesToRender; i++) {
             Component line = tooltip.get(i);
             String plainText = line.getString();
 
             if (plainText.trim().isEmpty()) {
                 if (i < linesToRender) {
-                    currentY += 6;
+                    currentY += 6 * baseTextScale;
                 }
                 continue;
             }
@@ -292,19 +324,20 @@ public class ZoomedItemRenderer {
             }
 
             int baseColor;
-            float lineScale;
+            float lineScaleMultiplier;
 
             if (i == 0) {
                 baseColor = 0xFFFFFF;
-                lineScale = 1.0f;
+                lineScaleMultiplier = 1.0f;
             } else if (i < essentialLines) {
                 baseColor = 0xAAAAAA;
-                lineScale = 1.0f;
+                lineScaleMultiplier = 1.0f;
             } else {
                 baseColor = 0x888888;
-                lineScale = 0.75f;
+                lineScaleMultiplier = 0.75f;
             }
 
+            float lineScale = baseTextScale * lineScaleMultiplier;
             int color = ARGB.color(textAlphaInt, ARGB.red(baseColor), ARGB.green(baseColor), ARGB.blue(baseColor));
             int scaledMaxWidth = (int) (maxWidth / lineScale);
 
@@ -314,24 +347,19 @@ public class ZoomedItemRenderer {
                 int lineWidth = font.width(wrappedLine);
                 float drawX = x + (itemSize - lineWidth * lineScale) / 2;
 
-                if (lineScale != 1.0f) {
-                    graphics.pose().pushMatrix();
-                    graphics.pose().translate(drawX, currentY);
-                    graphics.pose().scale(lineScale, lineScale);
-                    graphics.drawString(font, wrappedLine, 0, 0, color, false);
-                    graphics.pose().popMatrix();
-                    currentY += (int) (10 * lineScale);
-                } else {
-                    graphics.drawString(font, wrappedLine, (int) drawX, (int) currentY, color, false);
-                    currentY += 10;
-                }
+                graphics.pose().pushMatrix();
+                graphics.pose().translate(drawX, currentY);
+                graphics.pose().scale(lineScale, lineScale);
+                graphics.drawString(font, wrappedLine, 0, 0, color, false);
+                graphics.pose().popMatrix();
+                currentY += (int) (10 * lineScale);
             }
 
             sourceLineIndex++;
         }
     }
 
-    private static int calculateTextHeight(Font font, List<Component> tooltip, int maxSourceLines, int maxWidth) {
+    private static int calculateTextHeight(Font font, List<Component> tooltip, int maxSourceLines, int maxWidth, float baseTextScale) {
         int height = 0;
 
         for (int i = 0; i < Math.min(tooltip.size(), maxSourceLines); i++) {
@@ -339,11 +367,12 @@ public class ZoomedItemRenderer {
             String plainText = line.getString();
 
             if (plainText.trim().isEmpty()) {
-                height += 6;
+                height += (int) (6 * baseTextScale);
                 continue;
             }
 
-            float lineScale = (i == 0 || i < maxSourceLines) ? 1.0f : 0.75f;
+            float lineScaleMultiplier = (i == 0 || i < maxSourceLines) ? 1.0f : 0.75f;
+            float lineScale = baseTextScale * lineScaleMultiplier;
             int scaledMaxWidth = (int) (maxWidth / lineScale);
 
             List<FormattedCharSequence> wrappedLines = font.split(line, scaledMaxWidth);
