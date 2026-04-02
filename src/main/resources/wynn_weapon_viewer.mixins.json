@@ -1,12 +1,17 @@
 {
   "required": true,
   "package": "com.wynnweaponviewer.mixin",
-  "compatibilityLevel": "JAVA_8",
-  "mixins": [
-    "MixinHandledScreen"
+  "compatibilityLevel": "JAVA_21",
+  "minVersion": "0.8",
+  "client": [
+    "AbstractContainerScreenMixin",
+    "AbstractRecipeBookScreenMixin",
+    "GuiRendererMixin",
+    "GuiGraphicsAccessor",
+    "GuiRenderStateAccessor",
+    "PictureInPictureRendererAccessor"
   ],
-  "client": [],
-  "server": [],
+  "mixins": [],
   "injectors": {
     "defaultRequire": 1
   }

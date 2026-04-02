@@ -4,10 +4,13 @@
 
 	"config.wynn_weapon_viewer.title": "Wynn Weapon Bigger Configuration",
 	"config.wynn_weapon_viewer.category.general": "General",
+	"config.wynn_weapon_viewer.category.animations": "Animations",
+	"config.wynn_weapon_viewer.category.filters": "Item Filters",
+
 	"config.wynn_weapon_viewer.option.enabled": "Enabled",
 	"config.wynn_weapon_viewer.option.enabled.tooltip": "Enable or disable the Wynn Weapon Bigger mod",
 	"config.wynn_weapon_viewer.option.scale": "Zoom Scale",
-	"config.wynn_weapon_viewer.option.scale.tooltip": "Set the scale of the zoomed item (0.1 to 2.0)",
+	"config.wynn_weapon_viewer.option.scale.tooltip": "Set the scale of the zoomed item (0.1 to 1.0)",
 	"config.wynn_weapon_viewer.option.alignment": "Horizontal Alignment",
 	"config.wynn_weapon_viewer.option.alignment.tooltip": "Set the horizontal alignment of the zoomed item",
 	"config.wynn_weapon_viewer.option.xOffset": "X Offset",
@@ -16,6 +19,20 @@
 	"config.wynn_weapon_viewer.option.yOffset.tooltip": "Set the vertical offset of the zoomed item",
 	"config.wynn_weapon_viewer.option.showToggleMessage": "Show Toggle Message",
 	"config.wynn_weapon_viewer.option.showToggleMessage.tooltip": "Show a message when toggling the item zoom",
+
+	"config.wynn_weapon_viewer.option.appearAnimation": "Appear Animation",
+	"config.wynn_weapon_viewer.option.appearAnimation.tooltip": "Animation when item preview appears",
+	"config.wynn_weapon_viewer.option.idleAnimation": "Idle Animation",
+	"config.wynn_weapon_viewer.option.idleAnimation.tooltip": "Animation while hovering over an item",
+	"config.wynn_weapon_viewer.option.appearDelayMs": "Appear Delay (ms)",
+	"config.wynn_weapon_viewer.option.appearDelayMs.tooltip": "Delay before the item preview appears",
+	"config.wynn_weapon_viewer.option.showItemInfo": "Show Item Info",
+	"config.wynn_weapon_viewer.option.showItemInfo.tooltip": "Show item name, description and stats below the preview",
+	"config.wynn_weapon_viewer.option.infoDelaySeconds": "Info Delay (seconds)",
+	"config.wynn_weapon_viewer.option.infoDelaySeconds.tooltip": "Delay before showing item info",
+	"config.wynn_weapon_viewer.option.itemNameAbove": "Item Name Above",
+	"config.wynn_weapon_viewer.option.itemNameAbove.tooltip": "Show the item name above the preview instead of below",
+
 	"config.wynn_weapon_viewer.option.enableWeapons": "Enable for Weapons",
 	"config.wynn_weapon_viewer.option.enableWeapons.tooltip": "Enable zoom for Wynncraft weapons",
 	"config.wynn_weapon_viewer.option.enableArmor": "Enable for Armor",
@@ -26,7 +43,7 @@
 	"config.wynn_weapon_viewer.option.enableUnidentified.tooltip": "Enable zoom for unidentified Wynncraft items",
 	"config.wynn_weapon_viewer.option.enableCorkianAmplifiers": "Enable for Corkian Amplifiers",
 	"config.wynn_weapon_viewer.option.enableCorkianAmplifiers.tooltip": "Enable zoom for Corkian Amplifiers and related items",
+
 	"config.wynn_weapon_viewer.option.alignment.left": "Left",
 	"config.wynn_weapon_viewer.option.alignment.right": "Right"
-
 }
