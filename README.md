@@ -20,7 +20,7 @@ I make your weapon big, duh. A fork of [Big Items, Duh](https://modrinth.com/mod
 ## Installation
 
 1. Make sure you have Fabric Loader and Fabric API installed
-2. Download and install version 3.0.3 or later of Wynntils
+2. Download and install version 4.2.17 or later of Wynntils
 3. Download the latest version of Wynncraft Weapon Bigger from the versions page
 4. Place the downloaded .jar file in your Minecraft mods folder
 
@@ -48,10 +48,10 @@ You can configure WWB through the Mod Menu interface or config file:
   
 ## Requirements
 
-- Minecraft 1.21
-- Fabric Loader 0.16.0 or higher
+- Minecraft 1.21.11
+- Fabric Loader 0.18.1 or higher
 - Fabric API
-- Wynntils 2.1.1 or higher
+- Wynntils 4.2.17 or higher
 - Mod Menu
 
 ## Go Ham
