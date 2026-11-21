@@ -5,8 +5,7 @@
 
 I make your weapon big, duh. A fork of [Big Items, Duh](https://modrinth.com/mod/big-items-duh) designed to only show Wynncraft gear, now on 1.21.11. Made for my modpack [World of Wynncraft](https://modrinth.com/modpack/world-of-wynncraft)
 
-![WynnWeaponViewerPreview](https://github.com/user-attachments/assets/f6695dd8-e962-4ad0-8ea1-b8393230a99f)
-
+![promo](https://github.com/user-attachments/assets/4002859a-f832-4c8d-a317-c423ae58d11b)
 
 ## What's Up
 
@@ -22,13 +21,14 @@ I make your weapon big, duh. A fork of [Big Items, Duh](https://modrinth.com/mod
 
 ## See It
 
-<!-- floating-item.png goes here -->
-
 Floating item mode (the default): the item big, with its name, overall roll and badges under it.
 
-<!-- item-card.png goes here -->
+![floating](https://github.com/user-attachments/assets/4435b280-5459-45b3-a69d-b25fc2ca8cea)
+
 
 Item card mode: the same item in a Wynncraft-style card with every ID and roll. This is also what Ctrl+C copies.
+
+![card](https://github.com/user-attachments/assets/4f9ce3c6-72d6-400f-a949-555ff743acd2)
 
 ## Installation
 
@@ -53,15 +53,7 @@ Without Cloth Config, `/wwb config` shows where the file is. Edit it, then run `
 - The zoomed view will disappear when you move your cursor away from the weapon.
 - Use the configured keybind (default: period key) to toggle the zoom functionality on/off. (Currently, hotkeys don't work in inventories. This is a Minecraft bug)
 - Share the hovered item: press Wynntils' Share Item key (default F5) to link it in chat, or Ctrl+C to copy its item card as an image. The small print under the preview shows your current keys.
-
-### Commands
-
-| Command | What it does |
-|---|---|
-| `/wwb` | Shows the version, whether the preview is on, and the commands (click one to type it) |
-| `/wwb toggle` | Turns the preview on or off |
-| `/wwb config` | Opens the settings (or, without Cloth Config, shows where the config file is) |
-| `/wwb reload` | Re-reads the config file after you edit it by hand |
+- Use /wwb for a list of commands
 
 ## Requirements
 
