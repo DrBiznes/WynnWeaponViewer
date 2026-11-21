@@ -9,6 +9,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.wynnweaponviewer.card.ItemCardData;
 import com.wynnweaponviewer.mixin.GameRendererAccessor;
+import com.wynnweaponviewer.render.ZoomedItemPIPRenderer;
 import com.wynnweaponviewer.render.ZoomedItemRenderer;
 import com.wynnweaponviewer.render.card.CardBody;
 import com.wynnweaponviewer.render.card.CardLayout;
@@ -17,6 +18,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.world.item.ItemStack;
@@ -79,9 +81,11 @@ public final class CardSnapshot {
 
         OffscreenGuiContext.begin(target, guiScale);
         // Our own renderer (and so its own item atlas and picture-in-picture textures), so the screen's is untouched.
-        // GuiRendererMixin gives it our model renderer like any other GuiRenderer.
-        try (GuiRenderer renderer = new GuiRenderer(state, mc.renderBuffers().bufferSource(),
-                gameRenderer.getSubmitNodeStorage(), gameRenderer.getFeatureRenderDispatcher(), List.of())) {
+        // Fabric's SpecialGuiElementRegistry only fills the game's own GuiRenderer, so we hand this one our model
+        // renderer ourselves. Closing the GuiRenderer closes it too.
+        MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();
+        try (GuiRenderer renderer = new GuiRenderer(state, bufferSource, gameRenderer.getSubmitNodeStorage(),
+                gameRenderer.getFeatureRenderDispatcher(), List.of(new ZoomedItemPIPRenderer(bufferSource)))) {
             GuiGraphics graphics = new GuiGraphics(mc, state, -1, -1);
             draw.accept(graphics);
             renderer.render(((GameRendererAccessor) gameRenderer).wynnweapon$getFogRenderer()

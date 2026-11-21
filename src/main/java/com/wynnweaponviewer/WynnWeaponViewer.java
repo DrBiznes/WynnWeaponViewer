@@ -1,6 +1,7 @@
 package com.wynnweaponviewer;
 
 import com.wynnweaponviewer.config.ModConfig;
+import com.wynnweaponviewer.render.ZoomedItemPIPRenderer;
 import com.wynnweaponviewer.render.ZoomedItemRenderer;
 import com.wynnweaponviewer.render.card.FrameMasks;
 import com.wynnweaponviewer.share.CardShare;
@@ -12,6 +13,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.rendering.v1.SpecialGuiElementRegistry;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
@@ -50,6 +52,10 @@ public class WynnWeaponViewer implements ClientModInitializer {
 		ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(
 				Identifier.fromNamespaceAndPath(MOD_ID, "card_frame_masks"),
 				(ResourceManagerReloadListener) manager -> FrameMasks.clear());
+
+		// The big model is drawn as a picture-in-picture element. Fabric adds this renderer to the game's
+		// GuiRenderer (and makes more of it when several are drawn in one frame); the GuiRenderer closes it.
+		SpecialGuiElementRegistry.register(context -> new ZoomedItemPIPRenderer(context.vertexConsumers()));
 
 		// Register keybinding
 		toggleZoomKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(

@@ -6,7 +6,6 @@
   "client": [
     "AbstractContainerScreenMixin",
     "AbstractRecipeBookScreenMixin",
-    "GuiRendererMixin",
     "GuiGraphicsAccessor",
     "GuiRenderStateAccessor",
     "PictureInPictureRendererAccessor",
