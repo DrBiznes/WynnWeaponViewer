@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * The card's geometry in "tooltip pixels" (1 unit = 1 pixel of a vanilla tooltip at scale 1), independent of where
- * or how large it ends up on screen. Width is fixed so every card - on screen or, later, shared - has the same shape.
+ * or how large it ends up on screen. Width is fixed so every card - on screen or shared - has the same shape.
  *
  * <pre>
  *   content (0,0) ┌──────────────────────────┐

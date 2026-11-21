@@ -50,7 +50,7 @@ public class ZoomedItemRenderer {
     private static final Pattern EXPIRED_PATTERN = Pattern.compile(".*Expired -.*");
     private static final Pattern FULFILLED_PATTERN = Pattern.compile(".*Fulfilled -.*");
 
-    // Card mode (ModConfig showItemCard; off: the floating model with just the card's header under it).
+    // Card mode is the default; with showItemCard off, the floating model gets just the card's header under it.
     private static FloatingHeader floatingHeader;
     private static ItemCardData floatingHeaderData;
     private static boolean floatingHeaderWithPack;
@@ -62,6 +62,11 @@ public class ZoomedItemRenderer {
     private static final float MIN_CARD_SCALE = 1.0f;
     /** How much of the card's model window the model's square takes up. */
     private static final float MODEL_WINDOW_FILL = 0.98f;
+    /**
+     * The model is drawn this much larger inside the card's window than the floating model's default fit, which
+     * leaves room for Wynncraft's oversized weapon models. Big models may touch the window's edges.
+     */
+    private static final float CARD_MODEL_ZOOM = 1.3f;
 
     public static void beginFrame() {
         animationState.beginFrame();
@@ -245,7 +250,7 @@ public class ZoomedItemRenderer {
         boolean showInfo = config.showItemInfo && animationState.shouldShowInfo(config.infoDelaySeconds);
         float textAlpha = showInfo ? easeOutCubic(animationState.getTextAppearProgress(config.infoDelaySeconds)) : 0;
 
-        submitModel(graphics, stack, finalItemX, finalItemY, scaledSize, idleAngle, alpha, scissor);
+        submitModel(graphics, itemRenderState, stack, finalItemX, finalItemY, scaledSize, 1f, idleAngle, alpha, scissor);
 
         if (cardData.isPresent()) {
             // Wynntils-parsed header (name + overall roll + badges) instead of the raw tooltip lines.
@@ -258,14 +263,19 @@ public class ZoomedItemRenderer {
         }
     }
 
-    /** Queues the 3D model as a picture-in-picture texture covering the given GUI-space square. */
-    private static void submitModel(GuiGraphics graphics, ItemStack stack, float x, float y, float size,
-                                    float angle, float alpha, ScreenRectangle scissor) {
+    /**
+     * Queues the 3D model as a picture-in-picture texture covering the given GUI-space square.
+     *
+     * @param zoom how much larger than the default fit the model is drawn inside that square
+     */
+    private static void submitModel(GuiGraphics graphics, ItemStackRenderState renderState, ItemStack stack,
+                                    float x, float y, float size, float zoom, float angle, float alpha,
+                                    ScreenRectangle scissor) {
         Minecraft mc = Minecraft.getInstance();
-        mc.getItemModelResolver().updateForTopItem(itemRenderState, stack, ItemDisplayContext.GUI, mc.level, mc.player, 0);
+        mc.getItemModelResolver().updateForTopItem(renderState, stack, ItemDisplayContext.GUI, mc.level, mc.player, 0);
         GuiRenderState guiRenderState = ((GuiGraphicsAccessor) graphics).wynnweapon$getGuiRenderState();
         ZoomedItemRenderState state = new ZoomedItemRenderState(
-                itemRenderState, x, y, x + size, y + size, angle, alpha, scissor);
+                renderState, x, y, x + size, y + size, zoom, angle, alpha, scissor);
         ((GuiRenderStateAccessor) guiRenderState).wynnweapon$submitPictureInPicture(state);
     }
 
@@ -366,6 +376,31 @@ public class ZoomedItemRenderer {
             graphics.enableScissor(scissor.left(), scissor.top(), scissor.right(), scissor.bottom());
         }
 
+        // Text cascades in from when the card appears (or from the info delay, if that ends later).
+        float revealTime = Math.min(idleTime, animationState.getHoverDuration() - config.infoDelaySeconds);
+        drawCard(graphics, itemRenderState, stack, layout, placement, alpha, idleAngle, idleScale,
+                revealTime, config.cardStaggeredFade, scissor);
+
+        if (scissor != null) {
+            graphics.disableScissor();
+        }
+    }
+
+    /**
+     * Draws a finished card - fully faded in, model held still - with its top-left at the GUI origin and one GUI
+     * pixel per tooltip pixel. Used for shared card images (see {@code CardShare}), whatever the on-screen mode.
+     */
+    public static void drawStillCard(GuiGraphics graphics, ItemStackRenderState renderState, ItemStack stack,
+                                     CardLayout layout) {
+        ItemCardRenderer.Placement placement = new ItemCardRenderer.Placement(0, 0, 1);
+        drawCard(graphics, renderState, stack, layout, placement, 1f, 0f, 1f, Float.MAX_VALUE, false, null);
+    }
+
+    /** Frame, then model, then text - see {@link ItemCardRenderer} for why the order matters. */
+    private static void drawCard(GuiGraphics graphics, ItemStackRenderState renderState, ItemStack stack,
+                                 CardLayout layout, ItemCardRenderer.Placement placement, float alpha,
+                                 float idleAngle, float idleScale, float revealTime, boolean stagger,
+                                 ScreenRectangle scissor) {
         // 1. frame + model window
         ItemCardRenderer.renderBackground(graphics, layout, placement, alpha);
 
@@ -376,15 +411,11 @@ public class ZoomedItemRenderer {
         float modelSize = Math.min(windowW, windowH) * MODEL_WINDOW_FILL * idleScale;
         float modelX = window[0] + (windowW - modelSize) / 2f;
         float modelY = window[1] + (windowH - modelSize) / 2f;
-        submitModel(graphics, stack, modelX, modelY, modelSize, idleAngle, alpha, scissor);
+        submitModel(graphics, renderState, stack, modelX, modelY, modelSize, CARD_MODEL_ZOOM, idleAngle, alpha,
+                scissor);
 
-        // 3. text, cascading in from when the card appears (or from the info delay, if that ends later)
-        float revealTime = Math.min(idleTime, animationState.getHoverDuration() - config.infoDelaySeconds);
-        ItemCardRenderer.renderText(graphics, layout, placement, alpha, revealTime, config.cardStaggeredFade);
-
-        if (scissor != null) {
-            graphics.disableScissor();
-        }
+        // 3. header and body text
+        ItemCardRenderer.renderText(graphics, layout, placement, alpha, revealTime, stagger);
     }
 
     /**
@@ -434,17 +465,7 @@ public class ZoomedItemRenderer {
         return cachedLayouts.computeIfAbsent(density, d -> CardLayout.build(data, d));
     }
 
-    public static boolean isCardPreview() {
-        return ModConfig.isItemCardEnabled();
-    }
-
-    /** Same switch as the "Show Item Card" config option, and saved with it. */
-    public static void setCardPreview(boolean enabled) {
-        ModConfig.setItemCardEnabled(enabled);
-        invalidateLayouts();
-    }
-
-    public static void invalidateLayouts() {
+    private static void invalidateLayouts() {
         cachedLayouts.clear();
         layoutData = null;
         floatingHeader = null;
@@ -599,10 +620,12 @@ public class ZoomedItemRenderer {
     public static void cleanup() {
         animationState.reset();
         ItemCardCache.clear();
+        invalidateLayouts();
     }
 
     public static void onScreenClose() {
         animationState.reset();
         ItemCardCache.clear();
+        invalidateLayouts();
     }
 }

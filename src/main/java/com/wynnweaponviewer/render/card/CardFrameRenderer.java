@@ -52,14 +52,9 @@ public final class CardFrameRenderer {
         /** 0% overall roll: the opposite - colour drained, grey static that jitters and flickers. */
         DEFECTIVE;
 
-        /** Debug override ({@code /wwb debug frame}); null = decide from the item's roll. */
-        @Nullable
-        public static Effect forced;
-
         static Effect of(ItemCardData data, boolean pack) {
             // The tinted frames are built from the Wynncraft pack's white frame sprite.
             if (!pack) return NONE;
-            if (forced != null) return forced;
             if (data.overall().perfect()) return PERFECT;
             if (data.overall().defective()) return DEFECTIVE;
             return NONE;

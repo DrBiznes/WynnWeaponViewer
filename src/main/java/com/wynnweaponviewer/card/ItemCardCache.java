@@ -24,9 +24,6 @@ public final class ItemCardCache {
     private static long builtAtMs;
     private static Optional<ItemCardData> cachedData = Optional.empty();
 
-    /** Last successfully built card, kept after the screen closes so {@code /wwb debug card} can inspect it. */
-    private static ItemCardData lastHovered;
-
     private ItemCardCache() {}
 
     /**
@@ -49,15 +46,10 @@ public final class ItemCardCache {
         cachedFingerprint = fingerprint;
         builtAtMs = now;
         cachedData = item == null ? Optional.empty() : ItemCardDataFactory.create(liveStack);
-        cachedData.ifPresent(data -> lastHovered = data);
         return cachedData;
     }
 
-    public static Optional<ItemCardData> getLastHovered() {
-        return Optional.ofNullable(lastHovered);
-    }
-
-    /** Drops the per-hover cache (screen closed); keeps {@link #getLastHovered()} for debugging. */
+    /** Drops the per-hover cache (screen closed). */
     public static void clear() {
         cachedStack = ItemStack.EMPTY;
         cachedItem = null;

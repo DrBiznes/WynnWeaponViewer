@@ -12,6 +12,8 @@ public record ZoomedItemRenderState(
         float renderY0,
         float renderX1,
         float renderY1,
+        /** Model size multiplier inside the square (1 = the default fit). */
+        float zoom,
         float rotation,
         float alpha,
         @Nullable ScreenRectangle scissor

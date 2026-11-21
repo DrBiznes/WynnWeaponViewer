@@ -3,6 +3,7 @@ package com.wynnweaponviewer;
 import com.wynnweaponviewer.config.ModConfig;
 import com.wynnweaponviewer.render.ZoomedItemRenderer;
 import com.wynnweaponviewer.render.card.FrameMasks;
+import com.wynnweaponviewer.share.CardShare;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
@@ -13,6 +14,8 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -31,6 +34,7 @@ public class WynnWeaponViewer implements ClientModInitializer {
 			Identifier.fromNamespaceAndPath(MOD_ID, "general")
 	);
 	private static KeyMapping toggleZoomKey;
+	private static KeyMapping shareCardKey;
 	private static boolean zoomEnabled = true;
 
 	@Override
@@ -50,6 +54,17 @@ public class WynnWeaponViewer implements ClientModInitializer {
 				CATEGORY
 		));
 
+		// Used with Ctrl (Cmd on macOS) inside inventories only, so it doesn't clash with in-game C bindings.
+		shareCardKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+				"key.wynn_weapon_viewer.share_card",
+				InputConstants.Type.KEYSYM,
+				GLFW.GLFW_KEY_C,
+				CATEGORY
+		));
+
+		// Drives the tooltip page reading that sharing does first.
+		ClientTickEvents.END_CLIENT_TICK.register(client -> CardShare.tick());
+
 		// Register lifecycle events
 		ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
 			ZoomedItemRenderer.cleanup();
@@ -58,6 +73,16 @@ public class WynnWeaponViewer implements ClientModInitializer {
 		// Register screen events for rendering
 		ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
 			if (screen instanceof AbstractContainerScreen<?> containerScreen) {
+				// Ctrl+C: share the hovered item's card. Swallowed when it shares, so nothing else sees it.
+				// While its tooltip pages are being read, keys on that slot (drop, hotbar swap...) are held back.
+				ScreenKeyboardEvents.allowKeyPress(screen).register((screen1, keyEvent) -> {
+					if (CardShare.blocksInputOn(containerScreen) && !keyEvent.isEscape()) return false;
+					return !(CardShare.isShareShortcut(screen1, keyEvent, shareCardKey.matches(keyEvent))
+							&& CardShare.tryShare(containerScreen));
+				});
+				ScreenMouseEvents.allowMouseClick(screen).register((screen1, mouseEvent) ->
+						!CardShare.blocksInputOn(containerScreen));
+
 				// Key press handler
 				ScreenKeyboardEvents.afterKeyPress(screen).register((screen1, keyEvent) -> {
 					if (toggleZoomKey.matches(keyEvent)) {

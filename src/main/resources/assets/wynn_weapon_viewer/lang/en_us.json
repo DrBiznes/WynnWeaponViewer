@@ -1,5 +1,15 @@
 {
 	"key.wynn_weapon_viewer.toggle_zoom": "Toggle Item Zoom",
+	"key.wynn_weapon_viewer.share_card": "Share Item Card (with Ctrl, in inventories)",
+
+	"toast.wynn_weapon_viewer.share.reading": "Reading item pages...",
+	"toast.wynn_weapon_viewer.share.working": "Sharing item card...",
+	"toast.wynn_weapon_viewer.share.copied": "Item card copied",
+	"toast.wynn_weapon_viewer.share.copied.detail": "%s",
+	"toast.wynn_weapon_viewer.share.saved": "Item card saved",
+	"toast.wynn_weapon_viewer.share.saved.detail": "Couldn't copy it; it's in your screenshots folder",
+	"toast.wynn_weapon_viewer.share.failed": "Couldn't share item card",
+	"toast.wynn_weapon_viewer.share.failed.detail": "See the game log for details",
 	"category.wynn_weapon_viewer.general": "Wynn Weapon Bigger",
 
 	"config.wynn_weapon_viewer.title": "Wynn Weapon Bigger Configuration",
@@ -28,8 +38,8 @@
 	"config.wynn_weapon_viewer.option.idleAnimation.tooltip": "Animation while hovering over an item",
 	"config.wynn_weapon_viewer.option.cardIdleAnimation": "Idle Animation in Item Card",
 	"config.wynn_weapon_viewer.option.cardIdleAnimation.tooltip": "Also play the idle animation on the model inside the item card",
-	"config.wynn_weapon_viewer.option.cardStaggeredFade": "Staggered Text Fade in Item Card",
-	"config.wynn_weapon_viewer.option.cardStaggeredFade.tooltip": "Item card lines cascade in one after another (about a quarter second). Off: all lines fade in together",
+	"config.wynn_weapon_viewer.option.cardStaggeredFade": "Text Appear Animation",
+	"config.wynn_weapon_viewer.option.cardStaggeredFade.tooltip": "Item text cascades in line by line (about a quarter second), on the item card and under the floating item. Off: the text just appears",
 	"config.wynn_weapon_viewer.option.appearDelayMs": "Appear Delay (ms)",
 	"config.wynn_weapon_viewer.option.appearDelayMs.tooltip": "Delay before the item preview appears",
 	"config.wynn_weapon_viewer.option.showItemInfo": "Show Item Info",

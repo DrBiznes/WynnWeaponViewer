@@ -103,7 +103,7 @@ public final class ItemCardRenderer {
      * a second after {@code revealTime} reaches 0 - quick, since players flick through inventories fast.
      *
      * @param revealTime seconds since the text started appearing (negative: not yet)
-     * @param stagger    false: every line fades in together, without rising
+     * @param stagger    false: no animation, every line is simply there once {@code revealTime} passes 0
      */
     public static void renderText(GuiGraphics graphics, CardLayout layout, Placement placement, float alpha,
                                   float revealTime, boolean stagger) {
@@ -116,7 +116,7 @@ public final class ItemCardRenderer {
         int rowY = layout.bodyY();
         for (int i = 0; i < layout.body().size(); i++) {
             CardRow row = layout.body().get(i);
-            float reveal = reveal(revealTime, stagger ? Math.min(BODY_START + i * ROW_STEP, LAST_START) : 0);
+            float reveal = stagger ? reveal(revealTime, Math.min(BODY_START + i * ROW_STEP, LAST_START)) : 1f;
             if (reveal > 0) {
                 row.render(graphics, font, rowY + (stagger ? rise(reveal) : 0), layout.contentWidth(), alpha * reveal);
             }
@@ -145,7 +145,7 @@ public final class ItemCardRenderer {
                                           float revealTime, boolean stagger) {
         int y = 0;
         for (int i = 0; i < lines.size(); i++) {
-            float reveal = reveal(revealTime, stagger ? i * HEADER_STEP : 0);
+            float reveal = stagger ? reveal(revealTime, i * HEADER_STEP) : 1f;
             if (reveal > 0) {
                 graphics.drawString(font, lines.get(i), 0, y + (stagger ? rise(reveal) : 0),
                         ARGB.white(alpha * reveal), true);

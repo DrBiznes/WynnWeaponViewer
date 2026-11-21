@@ -58,8 +58,8 @@ public class ModConfig implements ModMenuApi {
         public IdleAnimation idleAnimation = IdleAnimation.NONE;
         /** Whether the idle animation also plays on the model inside the item card (off: the card holds it still). */
         public boolean cardIdleAnimation = false;
-        /** Item card text cascades in line by line (off: all lines fade in together). */
-        public boolean cardStaggeredFade = true;
+        /** Card and floating-header text cascades in line by line (off: it's just there, no animation). */
+        public boolean cardStaggeredFade = false;
         public int appearDelayMs = 250;
         public boolean showItemInfo = true;
         public int infoDelaySeconds = 0;
@@ -88,13 +88,6 @@ public class ModConfig implements ModMenuApi {
 
     public static void setEnabled(boolean enabled) {
         config.enabled = enabled;
-        saveConfig();
-    }
-
-    public static boolean isItemCardEnabled() { return config.showItemCard; }
-
-    public static void setItemCardEnabled(boolean enabled) {
-        config.showItemCard = enabled;
         saveConfig();
     }
 
@@ -232,7 +225,7 @@ public class ModConfig implements ModMenuApi {
                     .build());
 
             animations.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.wynn_weapon_viewer.option.cardStaggeredFade"), config.cardStaggeredFade)
-                    .setDefaultValue(true)
+                    .setDefaultValue(false)
                     .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.cardStaggeredFade.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.cardStaggeredFade = newValue;

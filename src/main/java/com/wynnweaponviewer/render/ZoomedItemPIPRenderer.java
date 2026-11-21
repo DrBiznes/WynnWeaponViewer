@@ -37,7 +37,8 @@ public class ZoomedItemPIPRenderer extends PictureInPictureRenderer<ZoomedItemRe
     @Override
     protected void renderToTexture(ZoomedItemRenderState state, PoseStack poseStack) {
         // Scale down the model slightly to fit larger Wynncraft weapons
-        poseStack.scale(MODEL_SCALE, -MODEL_SCALE, -MODEL_SCALE);
+        float modelScale = MODEL_SCALE * state.zoom();
+        poseStack.scale(modelScale, -modelScale, -modelScale);
 
         if (state.rotation() != 0) {
             poseStack.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(state.rotation()));
