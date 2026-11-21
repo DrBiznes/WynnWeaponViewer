@@ -175,7 +175,7 @@ public final class CardShare {
         }
         WynnWeaponViewer.LOGGER.info("Shared item card (clipboard: {}, saved: {})", copied, saved ? file : "no");
 
-        String name = data.name();
+        String name = displayName(data);
         String savedName = file.getFileName().toString();
         boolean wantedCopy = action.copies();
         Minecraft.getInstance().execute(() -> {
@@ -207,9 +207,17 @@ public final class CardShare {
     private static String fileName(ItemCardData data) {
         String safe = data.name().replaceAll("[^A-Za-z0-9 _'-]", "").trim().replace(' ', '_');
         String name = safe.isEmpty() ? "item" : safe;
-        return data.overall().percentage()
-                .map(pct -> name + String.format(Locale.ROOT, "_%.1f%%", pct))
-                .orElse(name);
+        return roll(data).map(roll -> name + "_" + roll).orElse(name);
+    }
+
+    /** {@code Divzer 95.3%} for the toast, matching the file name's roll; just the name when there's no roll. */
+    private static String displayName(ItemCardData data) {
+        return roll(data).map(roll -> data.name() + " " + roll).orElse(data.name());
+    }
+
+    /** The overall roll as {@code 95.3%}, empty when the item has none. */
+    private static Optional<String> roll(ItemCardData data) {
+        return data.overall().percentage().map(pct -> String.format(Locale.ROOT, "%.1f%%", pct));
     }
 
     private static Path uniqueFile(Path dir, String base) {

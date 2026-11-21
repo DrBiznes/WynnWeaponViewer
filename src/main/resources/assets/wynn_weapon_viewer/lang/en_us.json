@@ -4,7 +4,7 @@
 
 	"toast.wynn_weapon_viewer.share.reading": "Reading item pages...",
 	"toast.wynn_weapon_viewer.share.working": "Sharing item card...",
-	"toast.wynn_weapon_viewer.share.copied": "Item card copied",
+	"toast.wynn_weapon_viewer.share.copied": "Item image copied",
 	"toast.wynn_weapon_viewer.share.copied.detail": "%s",
 	"toast.wynn_weapon_viewer.share.saved": "Item card saved",
 	"toast.wynn_weapon_viewer.share.saved.detail": "Couldn't copy it; it's in your screenshots folder",

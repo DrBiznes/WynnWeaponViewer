@@ -279,11 +279,14 @@ public class ZoomedItemRenderer {
             if (hint != null) {
                 float hintScale = ItemCardRenderer.snapScale(Math.min(config.scale * 2.5f,
                         (float) availableWidth / hint.width()));
-                float reveal = ItemCardRenderer.trailingReveal(revealTime(idleTime, config), config.textCascade);
+                // Follows on from the header's cascade, or leads it if the header is hidden.
+                float start = config.showItemInfo
+                        ? ItemCardRenderer.trailingStart(floatingHeaderFor(cardData.get())) : 0f;
                 if (scissor != null) {
                     graphics.enableScissor(scissor.left(), scissor.top(), scissor.right(), scissor.bottom());
                 }
-                hint.render(graphics, centerX, hintTop, hintScale, alpha * reveal);
+                hint.render(graphics, centerX, hintTop, hintScale, alpha, revealTime(idleTime, config), start,
+                        config.textCascade);
                 if (scissor != null) {
                     graphics.disableScissor();
                 }
@@ -419,7 +422,7 @@ public class ZoomedItemRenderer {
         if (hint != null) {
             float hintScale = Math.min(scale, ItemCardRenderer.snapScale(regionW / hint.width()));
             hint.render(graphics, left + placement.width(layout) / 2f, top + placement.height(layout), hintScale,
-                    alpha * ItemCardRenderer.trailingReveal(revealTime, config.textCascade));
+                    alpha, revealTime, ItemCardRenderer.trailingStart(layout), config.textCascade);
         }
 
         if (scissor != null) {

@@ -117,22 +117,28 @@ public final class ShareHint {
     }
 
     /**
-     * Draws the lines centred on {@code centerX}, from {@code top} down.
+     * Draws the lines centred on {@code centerX}, from {@code top} down, cascading in after the text above them.
      *
-     * @param scale GUI pixels per hint pixel
+     * @param scale      GUI pixels per hint pixel
+     * @param revealTime seconds since the text started appearing (as for the card)
+     * @param start      when the first line starts, from {@link ItemCardRenderer#trailingStart}
      */
-    public void render(GuiGraphics graphics, float centerX, float top, float scale, float alpha) {
+    public void render(GuiGraphics graphics, float centerX, float top, float scale, float alpha,
+                       float revealTime, float start, boolean stagger) {
         if (alpha <= 0.02f) return;
         Font font = Minecraft.getInstance().font;
-        int color = ARGB.white(alpha);
         float y = top + GAP * scale;
         for (int i = 0; i < lines.size(); i++) {
-            graphics.pose().pushMatrix();
-            graphics.pose().translate(ItemCardRenderer.snapToPixel(centerX - lineWidths.get(i) * scale / 2f),
-                    ItemCardRenderer.snapToPixel(y));
-            graphics.pose().scale(scale, scale);
-            graphics.drawString(font, lines.get(i), 0, 0, color, true);
-            graphics.pose().popMatrix();
+            float reveal = ItemCardRenderer.trailingReveal(revealTime, start, i, stagger);
+            if (alpha * reveal > 0.02f) {
+                graphics.pose().pushMatrix();
+                graphics.pose().translate(ItemCardRenderer.snapToPixel(centerX - lineWidths.get(i) * scale / 2f),
+                        ItemCardRenderer.snapToPixel(y));
+                graphics.pose().scale(scale, scale);
+                graphics.drawString(font, lines.get(i), 0, ItemCardRenderer.trailingRise(reveal, stagger),
+                        ARGB.white(alpha * reveal), true);
+                graphics.pose().popMatrix();
+            }
             y += LINE_HEIGHT * scale;
         }
     }

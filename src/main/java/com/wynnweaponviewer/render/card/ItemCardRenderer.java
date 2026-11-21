@@ -164,10 +164,27 @@ public final class ItemCardRenderer {
     /** How far (tooltip pixels) a line rises while it fades in. */
     private static final int RISE = 3;
 
-    /** 0-1 fade for things drawn after the card's last line (the share hint): it comes in as the text settles. */
-    public static float trailingReveal(float revealTime, boolean stagger) {
+    /** When a line after the card's last one starts, so things drawn under the card (the share hint) carry on the cascade. */
+    public static float trailingStart(CardLayout layout) {
+        int rows = layout.body().size();
+        if (rows == 0) return layout.headerLines().size() * HEADER_STEP;
+        return Math.min(BODY_START + rows * ROW_STEP, LAST_START + ROW_STEP);
+    }
+
+    /** Same as {@link #trailingStart(CardLayout)}, for the card-less header. */
+    public static float trailingStart(FloatingHeader header) {
+        return header.lines().size() * HEADER_STEP;
+    }
+
+    /** 0-1 fade of the {@code line}-th trailing line, the first starting at {@code start} (see {@link #trailingStart}). */
+    public static float trailingReveal(float revealTime, float start, int line, boolean stagger) {
         if (revealTime <= 0) return 0f;
-        return stagger ? reveal(revealTime, LAST_START + LINE_FADE) : 1f;
+        return stagger ? reveal(revealTime, start + line * ROW_STEP) : 1f;
+    }
+
+    /** Whole-pixel rise of a trailing line while it fades in, matching the card's lines. */
+    public static int trailingRise(float reveal, boolean stagger) {
+        return stagger ? rise(reveal) : 0;
     }
 
     /** 0-1 eased progress of a line that starts at {@code start}. */
