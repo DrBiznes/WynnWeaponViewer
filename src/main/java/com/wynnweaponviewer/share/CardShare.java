@@ -8,6 +8,7 @@ import com.wynnweaponviewer.WynnWeaponViewer;
 import com.wynnweaponviewer.accessor.ContainerScreenAccessor;
 import com.wynnweaponviewer.card.ItemCardCache;
 import com.wynnweaponviewer.card.ItemCardData;
+import com.wynnweaponviewer.config.ModConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.toasts.SystemToast;
@@ -28,9 +29,9 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
- * Ctrl+C on an item in any inventory: renders its card (always the full card, whatever the on-screen mode), saves it
- * to {@code screenshots/} as {@code <Item_Name>_<roll>%.png} and copies it to the clipboard. Progress and the
- * result show in a toast.
+ * Ctrl+C on an item in any inventory: renders its card (always the card, whatever the on-screen mode), then saves
+ * it to {@code screenshots/} as {@code <Item_Name>_<roll>%.png} and/or copies it to the clipboard, per the Share
+ * setting. Progress and the result show in a toast.
  *
  * <p>Tooltip pages the player hasn't looked at (powders etc.) are read first, the same way Wynntils' chat share
  * does it - see {@link PageFlip}.
@@ -99,7 +100,7 @@ public final class CardShare {
         busySince = now;
 
         WynnItem wynnItem = Models.Item.getWynnItem(stack).orElse(null);
-        PageFlip flip = PageFlip.prepare(screen, slot, complete -> {
+        PageFlip flip = !ModConfig.getConfig().shareReadAllPages ? null : PageFlip.prepare(screen, slot, complete -> {
             pageFlip = null;
             if (Minecraft.getInstance().player == null) { // left the world mid-read
                 busySince = 0;
@@ -135,28 +136,56 @@ public final class CardShare {
         }
     }
 
-    /** IO thread. */
+    /** IO thread. Saves to {@code screenshots/} and/or copies, depending on the Share setting. */
     private static void saveAndCopy(NativeImage image, ItemCardData data) {
+        ModConfig.ShareAction action = ModConfig.getConfig().shareAction;
+        Path screenshots = Minecraft.getInstance().gameDirectory.toPath().resolve("screenshots");
         Path file;
         try (image) {
-            Path dir = Minecraft.getInstance().gameDirectory.toPath().resolve("screenshots");
-            Files.createDirectories(dir);
-            file = uniqueFile(dir, fileName(data));
+            // Copy only: the clipboard tools read from a file, so write a temporary one.
+            if (action.keepsFile()) {
+                Files.createDirectories(screenshots);
+                file = uniqueFile(screenshots, fileName(data));
+            } else {
+                file = Files.createTempFile("wynn_weapon_bigger_card", ".png");
+            }
             image.writeToFile(file);
         } catch (IOException | RuntimeException e) {
             fail(e);
             return;
         }
 
-        boolean copied = ClipboardImage.copyPng(file);
-        WynnWeaponViewer.LOGGER.info("Shared item card {} (clipboard: {})", file, copied);
+        boolean copied = action.copies() && ClipboardImage.copyPng(file);
+        boolean saved = action.keepsFile();
+        if (!action.keepsFile()) {
+            try {
+                if (copied) {
+                    Files.deleteIfExists(file);
+                } else {
+                    // Copying failed: keep the image in screenshots/ rather than lose it.
+                    Files.createDirectories(screenshots);
+                    Path kept = uniqueFile(screenshots, fileName(data));
+                    Files.move(file, kept);
+                    file = kept;
+                    saved = true;
+                }
+            } catch (IOException e) {
+                WynnWeaponViewer.LOGGER.warn("Couldn't tidy up the shared card file {}", file, e);
+            }
+        }
+        WynnWeaponViewer.LOGGER.info("Shared item card (clipboard: {}, saved: {})", copied, saved ? file : "no");
+
         String name = data.name();
+        String savedName = file.getFileName().toString();
+        boolean wantedCopy = action.copies();
         Minecraft.getInstance().execute(() -> {
             busySince = 0;
             if (copied) {
                 toast("copied", Component.translatable(LANG + "copied.detail", name));
-            } else {
+            } else if (wantedCopy) {
                 toast("saved", Component.translatable(LANG + "saved.detail"));
+            } else {
+                toast("saved", Component.translatable(LANG + "saved.file", savedName));
             }
         });
     }

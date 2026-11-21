@@ -27,10 +27,17 @@ dependencies {
 
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
-
-	modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
+	// Optional: compiled against, present in the dev client, but not required by (or bundled with) the mod.
+	// `gradlew runClient -PwithoutOptionalMods` starts the dev client without them, to test that path.
+	modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
+	modCompileOnly("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
 		exclude(group: "net.fabricmc.fabric-api")
+	}
+	if (!project.hasProperty("withoutOptionalMods")) {
+		modLocalRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
+		modLocalRuntime("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
+			exclude(group: "net.fabricmc.fabric-api")
+		}
 	}
 
 	// Wynntils from Modrinth Maven (version ID for wynntils_version, fabric build)

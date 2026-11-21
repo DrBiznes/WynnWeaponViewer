@@ -59,6 +59,6 @@ jobs:
           java: 21
           dependencies: |
             fabric-api(required){modrinth:fabric-api}{curseforge:fabric-api}
-            cloth-config(required){modrinth:cloth-config}{curseforge:cloth-config}
+            cloth-config(optional){modrinth:cloth-config}{curseforge:cloth-config}
             wynntils(required){modrinth:wynntils}{curseforge:wynntils}
             modmenu(optional){modrinth:modmenu}{curseforge:modmenu}

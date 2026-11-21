@@ -32,19 +32,20 @@ I make your weapon big, duh. A fork of [Big Items, Duh](https://modrinth.com/mod
 
 ## Configuration
 
-You can configure WWB through the Mod Menu interface or config file:
+Every setting lives in `config/wynn_weapon_viewer.json`, so WWB works with no other mods. To edit settings in game:
 
-1. Install [Mod Menu](https://modrinth.com/mod/modmenu) if you haven't already.
-2. In the game, go to Mods -> Find "Wynn Weapon Bigger" -> Click "Configure".
-3. Adjust settings such as zoom scale, position, and toggle message visibility.
-4. Toggle weapon, armor, accessory, and un-id box zoom separately.
+1. Install [Cloth Config](https://modrinth.com/mod/cloth-config) (and [Mod Menu](https://modrinth.com/mod/modmenu) for a "Configure" button in the mod list).
+2. Open the settings with `/wwb config`, or from Mods -> "Wynn Weapon Bigger" -> "Configure".
+3. Pick the display mode (item card or floating item), size, side and offsets, what the card shows, animations, Ctrl+C sharing, and which items get the preview.
+
+Without Cloth Config, `/wwb config` shows where the file is. Edit it, then run `/wwb reload`. A broken file won't crash the game: bad values fall back to their defaults.
 
 ## Usage
 
 - Hover over a Wynncraft weapon in your inventory to see it zoomed in.
 - The zoomed view will disappear when you move your cursor away from the weapon.
 - Use the configured keybind (default: period key) to toggle the zoom functionality on/off. (Currently, hotkeys don't work in inventories. This is a Minecraft bug)
-- Access the mod's configuration through Mod Menu to adjust zoom scale, position, and other settings.
+- Open the settings with `/wwb config` (or through Mod Menu) to adjust the display, animations and item filters.
   
 ## Requirements
 
@@ -52,7 +53,7 @@ You can configure WWB through the Mod Menu interface or config file:
 - Fabric Loader 0.18.1 or higher
 - Fabric API
 - Wynntils 4.2.17 or higher
-- Mod Menu
+- Optional: Cloth Config (in-game settings screen) and Mod Menu
 
 ## Go Ham
 

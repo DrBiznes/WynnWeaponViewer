@@ -20,7 +20,7 @@
 			"com.wynnweaponviewer.WynnWeaponViewer"
 		],
 		"modmenu": [
-			"com.wynnweaponviewer.config.ModConfig"
+			"com.wynnweaponviewer.config.ModMenuIntegration"
 		]
 	},
 	"mixins": [
@@ -31,8 +31,11 @@
 		"minecraft": "1.21.11",
 		"java": ">=21",
 		"fabric-api": "*",
-		"cloth-config": "*",
 		"wynntils": ">=${wynntils_version}"
+	},
+	"suggests": {
+		"cloth-config": "*",
+		"modmenu": "*"
 	},
 	"custom": {
 		"modmenu": {

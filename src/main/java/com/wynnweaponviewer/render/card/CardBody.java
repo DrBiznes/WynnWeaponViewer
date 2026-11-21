@@ -1,6 +1,7 @@
 package com.wynnweaponviewer.render.card;
 
 import com.wynnweaponviewer.card.ItemCardData;
+import com.wynnweaponviewer.config.ModConfig;
 import com.wynntils.core.components.Handlers;
 import com.wynntils.core.text.fonts.CommonFonts;
 import com.wynntils.handlers.tooltip.TooltipBuilder;
@@ -55,14 +56,17 @@ public final class CardBody {
 
     public static List<CardRow> build(ItemCardData data, Density density, boolean pack) {
         TooltipOptions options = Handlers.Tooltip.getTooltipOptions();
+        ModConfig.Config config = ModConfig.getConfig();
         int dividerColor = TooltipBuilder.getDividerColor(data.tier()).asInt();
         List<CardRow> rows = new ArrayList<>();
 
         // --- identifications ---
         List<ItemCardData.Identification> ids = data.identifications();
-        if (!ids.isEmpty()) {
+        int limit = config.cardMaxIdentifications >= ModConfig.ALL_IDENTIFICATIONS
+                ? Integer.MAX_VALUE : config.cardMaxIdentifications;
+        if (!ids.isEmpty() && limit > 0) {
             rows.add(new CardRow.Divider(dividerColor, pack));
-            int shown = Math.min(ids.size(), density.maxIdentifications);
+            int shown = Math.min(ids.size(), Math.min(limit, density.maxIdentifications));
             for (int i = 0; i < shown; i++) {
                 rows.add(identification(ids.get(i), options));
             }
@@ -73,7 +77,7 @@ public final class CardBody {
 
         // --- footer ---
         if (density.footer) {
-            List<CardRow> footer = footer(data, options, pack);
+            List<CardRow> footer = footer(data, options, config, pack);
             if (!footer.isEmpty()) {
                 rows.add(new CardRow.Divider(dividerColor, pack));
                 rows.addAll(footer);
@@ -104,25 +108,30 @@ public final class CardBody {
         return new CardRow.Identification(name, value, CardRow.wynn(pctText, rollColor), pct / 100f, rollColor, true);
     }
 
-    private static List<CardRow> footer(ItemCardData data, TooltipOptions options, boolean pack) {
+    private static List<CardRow> footer(ItemCardData data, TooltipOptions options, ModConfig.Config config,
+                                        boolean pack) {
         List<CardRow> rows = new ArrayList<>();
 
         // Powder sockets (left) + rerolls (right)
-        ItemCardData.Powders powders = data.powders();
-        Component sockets = powders.slots() > 0 ? sockets(powders, pack) : null;
-        Component rerolls = data.rerolls() > 0
-                ? CardRow.wynn(data.rerolls() + (data.rerolls() == 1 ? " reroll" : " rerolls"), MUTED_COLOR)
-                : null;
-        if (sockets != null || rerolls != null) rows.add(new CardRow.Split(sockets, rerolls));
+        if (config.cardShowPowders) {
+            ItemCardData.Powders powders = data.powders();
+            Component sockets = powders.slots() > 0 ? sockets(powders, pack) : null;
+            Component rerolls = data.rerolls() > 0
+                    ? CardRow.wynn(data.rerolls() + (data.rerolls() == 1 ? " reroll" : " rerolls"), MUTED_COLOR)
+                    : null;
+            if (sockets != null || rerolls != null) rows.add(new CardRow.Split(sockets, rerolls));
+        }
 
         // Shiny stat
-        data.shinyStat().ifPresent(shiny -> rows.add(new CardRow.Split(
+        if (config.cardShowShinyStat) data.shinyStat().ifPresent(shiny -> rows.add(new CardRow.Split(
                 CardRow.wynn("✧ " + shiny.displayName(), SHINY_COLOR),
                 CardRow.wynn(String.format(Locale.ROOT, "%,d", shiny.value()) + shiny.unit(), SHINY_COLOR))));
 
         // Scales: the first (main) weighting of each source, side by side.
         Map<ItemWeightSource, ItemCardData.Scale> topScales = new LinkedHashMap<>();
-        for (ItemCardData.Scale scale : data.scales()) topScales.putIfAbsent(scale.source(), scale);
+        if (config.cardShowScales) {
+            for (ItemCardData.Scale scale : data.scales()) topScales.putIfAbsent(scale.source(), scale);
+        }
         if (!topScales.isEmpty()) {
             List<Component> entries = new ArrayList<>();
             for (ItemCardData.Scale scale : topScales.values()) entries.add(scale(scale, options));

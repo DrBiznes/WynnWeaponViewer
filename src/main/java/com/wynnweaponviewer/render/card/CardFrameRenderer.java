@@ -1,6 +1,7 @@
 package com.wynnweaponviewer.render.card;
 
 import com.wynnweaponviewer.card.ItemCardData;
+import com.wynnweaponviewer.config.ModConfig;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
@@ -54,7 +55,7 @@ public final class CardFrameRenderer {
 
         static Effect of(ItemCardData data, boolean pack) {
             // The tinted frames are built from the Wynncraft pack's white frame sprite.
-            if (!pack) return NONE;
+            if (!pack || !ModConfig.getConfig().cardFrameEffects) return NONE;
             if (data.overall().perfect()) return PERFECT;
             if (data.overall().defective()) return DEFECTIVE;
             return NONE;

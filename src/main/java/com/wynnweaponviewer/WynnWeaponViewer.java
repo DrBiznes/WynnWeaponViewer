@@ -18,12 +18,14 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 public class WynnWeaponViewer implements ClientModInitializer {
@@ -35,11 +37,14 @@ public class WynnWeaponViewer implements ClientModInitializer {
 	);
 	private static KeyMapping toggleZoomKey;
 	private static KeyMapping shareCardKey;
-	private static boolean zoomEnabled = true;
+	@Nullable
+	private static Screen pendingScreen;
 
 	@Override
 	public void onInitializeClient() {
 		LOGGER.info("Initializing Wynn Weapon Viewer");
+		// Load (and if needed, migrate or repair) the config file now rather than on the first inventory opened.
+		ModConfig.getConfig();
 
 		// Tinted card frames are built from the pack's frame sprites; rebuild them whenever the pack changes.
 		ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(
@@ -63,7 +68,14 @@ public class WynnWeaponViewer implements ClientModInitializer {
 		));
 
 		// Drives the tooltip page reading that sharing does first.
-		ClientTickEvents.END_CLIENT_TICK.register(client -> CardShare.tick());
+		ClientTickEvents.END_CLIENT_TICK.register(client -> {
+			CardShare.tick();
+			if (pendingScreen != null) {
+				Screen screen = pendingScreen;
+				pendingScreen = null;
+				client.setScreen(screen);
+			}
+		});
 
 		// Register lifecycle events
 		ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
@@ -111,26 +123,34 @@ public class WynnWeaponViewer implements ClientModInitializer {
 	}
 
 	public static void toggleZoom() {
-		setZoomEnabled(!zoomEnabled);
-		LOGGER.info("Weapon zoom toggled: {}", zoomEnabled ? "ON" : "OFF");
+		setZoomEnabled(!isZoomEnabled());
+		LOGGER.info("Weapon zoom toggled: {}", isZoomEnabled() ? "ON" : "OFF");
 		if (ModConfig.shouldShowToggleMessage()) {
-			sendChatMessage(zoomEnabled
+			sendChatMessage(isZoomEnabled()
 					? "\u00A76[Weapon Viewer] Your weapon grows gargantuan (but only in your inventory)"
 					: "\u00A76[Weapon Viewer] Your weapon weeps, for it yearns to be big!");
 		}
 	}
 
+	/** The saved "Enabled" option is the one on/off switch; the keybind, commands and config screen all set it. */
 	public static void setZoomEnabled(boolean enabled) {
-		zoomEnabled = enabled;
 		ModConfig.setEnabled(enabled);
 	}
 
 	public static boolean isZoomEnabled() {
-		return zoomEnabled;
+		return ModConfig.isEnabled();
 	}
 
 	public static boolean shouldRenderZoom() {
-		return ModConfig.isEnabled() && zoomEnabled;
+		return ModConfig.isEnabled();
+	}
+
+	/**
+	 * Opens a screen on the next client tick. Commands run while the chat screen is still open, and it closes
+	 * itself right after, so setting a screen straight away would be undone.
+	 */
+	public static void openScreenNextTick(Screen screen) {
+		pendingScreen = screen;
 	}
 
 	private static void sendChatMessage(String message) {

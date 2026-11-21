@@ -20,6 +20,9 @@ import com.wynntils.core.components.Models;
 import com.wynntils.models.items.items.game.GearItem;
 import com.wynntils.models.gear.type.GearType;
 import com.wynntils.models.items.items.game.GearBoxItem;
+import com.wynntils.models.items.items.game.AmplifierItem;
+import com.wynntils.models.items.items.game.InsulatorItem;
+import com.wynntils.models.items.items.game.SimulatorItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -50,12 +53,14 @@ public class ZoomedItemRenderer {
     private static final Pattern EXPIRED_PATTERN = Pattern.compile(".*Expired -.*");
     private static final Pattern FULFILLED_PATTERN = Pattern.compile(".*Fulfilled -.*");
 
-    // Card mode is the default; with showItemCard off, the floating model gets just the card's header under it.
+    // Card mode is the default; in floating mode the model gets just the card's header under it.
     private static FloatingHeader floatingHeader;
     private static ItemCardData floatingHeaderData;
     private static boolean floatingHeaderWithPack;
     private static ItemCardData layoutData;
     private static boolean layoutWithPack;
+    /** The config revision the cached layouts were built with (card contents are configurable). */
+    private static int layoutConfigRevision;
     private static final java.util.EnumMap<CardBody.Density, CardLayout> cachedLayouts =
             new java.util.EnumMap<>(CardBody.Density.class);
     /** Never shrink the card below the size of a normal tooltip; trim content instead (see CardBody.Density). */
@@ -151,7 +156,16 @@ public class ZoomedItemRenderer {
                     }
                     return false;
                 })
-                .orElse(false) || (config.enableUnidentified && isUnidentifiedItem(itemStack));
+                .orElse(false)
+                || (config.enableUnidentified && isUnidentifiedItem(itemStack))
+                || (config.enableCorkianAmplifiers && isCorkianItem(itemStack));
+    }
+
+    /** Corkian Amplifiers, Insulators and Simulators. */
+    private static boolean isCorkianItem(ItemStack itemStack) {
+        return Models.Item.asWynnItem(itemStack, AmplifierItem.class).isPresent()
+                || Models.Item.asWynnItem(itemStack, InsulatorItem.class).isPresent()
+                || Models.Item.asWynnItem(itemStack, SimulatorItem.class).isPresent();
     }
 
     private static boolean isUnidentifiedItem(ItemStack itemStack) {
@@ -172,7 +186,7 @@ public class ZoomedItemRenderer {
         float progress = animationState.getAppearProgress(hasAppearAnimation, delayMs);
         if (progress <= 0) return;
 
-        if (config.showItemCard && cardData.isPresent()) {
+        if (config.displayMode == ModConfig.DisplayMode.CARD && cardData.isPresent()) {
             renderCardComposition(graphics, accessor, stack, cardData.get(), config, progress, hasAppearAnimation, delayMs);
             return;
         }
@@ -379,7 +393,7 @@ public class ZoomedItemRenderer {
         // Text cascades in from when the card appears (or from the info delay, if that ends later).
         float revealTime = Math.min(idleTime, animationState.getHoverDuration() - config.infoDelaySeconds);
         drawCard(graphics, itemRenderState, stack, layout, placement, alpha, idleAngle, idleScale,
-                revealTime, config.cardStaggeredFade, scissor);
+                revealTime, config.textCascade, scissor);
 
         if (scissor != null) {
             graphics.disableScissor();
@@ -438,7 +452,7 @@ public class ZoomedItemRenderer {
             graphics.enableScissor(scissor.left(), scissor.top(), scissor.right(), scissor.bottom());
         }
         ItemCardRenderer.renderFloatingHeader(graphics, header, left, top, scale, alpha, revealTime,
-                config.cardStaggeredFade);
+                config.textCascade);
         if (scissor != null) {
             graphics.disableScissor();
         }
@@ -454,13 +468,15 @@ public class ZoomedItemRenderer {
         return floatingHeader;
     }
 
-    /** Layouts are rebuilt only when the card data or the resource pack state changes. */
+    /** Layouts are rebuilt only when the card data, the resource pack state or the settings change. */
     private static CardLayout layoutFor(ItemCardData data, CardBody.Density density) {
         boolean packActive = WynnGlyphs.isPackActive();
-        if (data != layoutData || packActive != layoutWithPack) {
+        int revision = ModConfig.revision();
+        if (data != layoutData || packActive != layoutWithPack || revision != layoutConfigRevision) {
             cachedLayouts.clear();
             layoutData = data;
             layoutWithPack = packActive;
+            layoutConfigRevision = revision;
         }
         return cachedLayouts.computeIfAbsent(density, d -> CardLayout.build(data, d));
     }
