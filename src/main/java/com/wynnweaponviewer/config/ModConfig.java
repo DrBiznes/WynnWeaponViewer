@@ -50,6 +50,8 @@ public class ModConfig implements ModMenuApi {
         public int xOffset = 0;
         public int yOffset = 0;
         public boolean showToggleMessage = true;
+        /** Draw the zoomed model inside the Wynncraft-style item card (off: the original floating model + info text). */
+        public boolean showItemCard = true;
 
         // Animation settings (from ItemZoomer)
         public AppearAnimation appearAnimation = AppearAnimation.FADE;
@@ -86,6 +88,13 @@ public class ModConfig implements ModMenuApi {
 
     public static void setEnabled(boolean enabled) {
         config.enabled = enabled;
+        saveConfig();
+    }
+
+    public static boolean isItemCardEnabled() { return config.showItemCard; }
+
+    public static void setItemCardEnabled(boolean enabled) {
+        config.showItemCard = enabled;
         saveConfig();
     }
 
@@ -181,6 +190,15 @@ public class ModConfig implements ModMenuApi {
                     .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.showToggleMessage.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.showToggleMessage = newValue;
+                        saveConfig();
+                    })
+                    .build());
+
+            general.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.wynn_weapon_viewer.option.showItemCard"), config.showItemCard)
+                    .setDefaultValue(true)
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.showItemCard.tooltip"))
+                    .setSaveConsumer(newValue -> {
+                        config.showItemCard = newValue;
                         saveConfig();
                     })
                     .build());

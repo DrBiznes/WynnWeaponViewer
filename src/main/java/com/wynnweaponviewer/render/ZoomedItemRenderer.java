@@ -7,6 +7,7 @@ import com.wynnweaponviewer.card.ItemCardCache;
 import com.wynnweaponviewer.card.ItemCardData;
 import com.wynnweaponviewer.render.card.CardBody;
 import com.wynnweaponviewer.render.card.CardLayout;
+import com.wynnweaponviewer.render.card.FloatingHeader;
 import com.wynnweaponviewer.render.card.ItemCardRenderer;
 import com.wynnweaponviewer.render.card.WynnGlyphs;
 import com.wynnweaponviewer.mixin.GuiGraphicsAccessor;
@@ -49,8 +50,10 @@ public class ZoomedItemRenderer {
     private static final Pattern EXPIRED_PATTERN = Pattern.compile(".*Expired -.*");
     private static final Pattern FULFILLED_PATTERN = Pattern.compile(".*Fulfilled -.*");
 
-    // Card mode (dev toggle until the card replaces the floating model + renderItemInfo for good).
-    private static boolean cardPreview = false;
+    // Card mode (ModConfig showItemCard; off: the floating model with just the card's header under it).
+    private static FloatingHeader floatingHeader;
+    private static ItemCardData floatingHeaderData;
+    private static boolean floatingHeaderWithPack;
     private static ItemCardData layoutData;
     private static boolean layoutWithPack;
     private static final java.util.EnumMap<CardBody.Density, CardLayout> cachedLayouts =
@@ -164,7 +167,7 @@ public class ZoomedItemRenderer {
         float progress = animationState.getAppearProgress(hasAppearAnimation, delayMs);
         if (progress <= 0) return;
 
-        if (cardPreview && cardData.isPresent()) {
+        if (config.showItemCard && cardData.isPresent()) {
             renderCardComposition(graphics, accessor, stack, cardData.get(), config, progress, hasAppearAnimation, delayMs);
             return;
         }
@@ -244,7 +247,13 @@ public class ZoomedItemRenderer {
 
         submitModel(graphics, stack, finalItemX, finalItemY, scaledSize, idleAngle, alpha, scissor);
 
-        if (showInfo && textAlpha > 0) {
+        if (cardData.isPresent()) {
+            // Wynntils-parsed header (name + overall roll + badges) instead of the raw tooltip lines.
+            if (config.showItemInfo) {
+                renderFloatingHeader(graphics, cardData.get(), config, finalTextX + itemSize / 2f, finalTextY,
+                        finalItemY - textGap, availableWidth, alpha, idleTime, scissor);
+            }
+        } else if (showInfo && textAlpha > 0) {
             renderItemInfo(graphics, mc, stack, finalTextX, finalTextY, finalNameAboveY, itemSize, textAlpha * alpha, config.scale, config.itemNameAbove);
         }
     }
@@ -378,6 +387,42 @@ public class ZoomedItemRenderer {
         }
     }
 
+    /**
+     * Card-less mode's text: the card header floating under the model (or above it with itemNameAbove), centred on
+     * it and sized like the old item info text, shrunk if it would be wider than the free space.
+     */
+    private static void renderFloatingHeader(GuiGraphics graphics, ItemCardData data, ModConfig.Config config,
+                                             float centerX, float belowTop, float aboveBottom, int maxWidth,
+                                             float alpha, float idleTime, ScreenRectangle scissor) {
+        FloatingHeader header = floatingHeaderFor(data);
+        float scale = ItemCardRenderer.snapScale(Math.min(config.scale * 2.5f, (float) maxWidth / header.width()));
+        float width = header.width() * scale;
+        float height = header.height() * scale;
+        float left = centerX - width / 2f + header.overhang() * scale;
+        float top = config.itemNameAbove ? aboveBottom - height : belowTop;
+
+        // Same reveal as the card: from when the model appears, or from the info delay if that ends later.
+        float revealTime = Math.min(idleTime, animationState.getHoverDuration() - config.infoDelaySeconds);
+        if (scissor != null) {
+            graphics.enableScissor(scissor.left(), scissor.top(), scissor.right(), scissor.bottom());
+        }
+        ItemCardRenderer.renderFloatingHeader(graphics, header, left, top, scale, alpha, revealTime,
+                config.cardStaggeredFade);
+        if (scissor != null) {
+            graphics.disableScissor();
+        }
+    }
+
+    private static FloatingHeader floatingHeaderFor(ItemCardData data) {
+        boolean packActive = WynnGlyphs.isPackActive();
+        if (floatingHeader == null || data != floatingHeaderData || packActive != floatingHeaderWithPack) {
+            floatingHeader = FloatingHeader.build(data);
+            floatingHeaderData = data;
+            floatingHeaderWithPack = packActive;
+        }
+        return floatingHeader;
+    }
+
     /** Layouts are rebuilt only when the card data or the resource pack state changes. */
     private static CardLayout layoutFor(ItemCardData data, CardBody.Density density) {
         boolean packActive = WynnGlyphs.isPackActive();
@@ -390,17 +435,19 @@ public class ZoomedItemRenderer {
     }
 
     public static boolean isCardPreview() {
-        return cardPreview;
+        return ModConfig.isItemCardEnabled();
     }
 
+    /** Same switch as the "Show Item Card" config option, and saved with it. */
     public static void setCardPreview(boolean enabled) {
-        cardPreview = enabled;
+        ModConfig.setItemCardEnabled(enabled);
         invalidateLayouts();
     }
 
     public static void invalidateLayouts() {
         cachedLayouts.clear();
         layoutData = null;
+        floatingHeader = null;
     }
 
     private static boolean isLeftSideBlocked(AbstractContainerScreen<?> screen, ContainerScreenAccessor accessor) {

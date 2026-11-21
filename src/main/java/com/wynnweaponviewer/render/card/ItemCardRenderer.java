@@ -3,9 +3,12 @@ package com.wynnweaponviewer.render.card;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
+
+import java.util.List;
 
 /**
  * Draws an item card from a {@link CardLayout}.
@@ -108,15 +111,7 @@ public final class ItemCardRenderer {
         Font font = Minecraft.getInstance().font;
         beginContent(graphics, placement);
 
-        int y = 0;
-        for (int i = 0; i < layout.headerLines().size(); i++) {
-            float reveal = reveal(revealTime, stagger ? i * HEADER_STEP : 0);
-            if (reveal > 0) {
-                graphics.drawString(font, layout.headerLines().get(i), 0, y + (stagger ? rise(reveal) : 0),
-                        ARGB.white(alpha * reveal), true);
-            }
-            y += CardLayout.LINE_HEIGHT + (i == 0 ? CardLayout.TITLE_GAP : 0);
-        }
+        renderHeaderLines(graphics, font, layout.headerLines(), alpha, revealTime, stagger);
 
         int rowY = layout.bodyY();
         for (int i = 0; i < layout.body().size(); i++) {
@@ -129,6 +124,34 @@ public final class ItemCardRenderer {
         }
 
         graphics.pose().popMatrix();
+    }
+
+    /**
+     * Card-less mode: only the header lines, with their origin at (left, top) in GUI coordinates and no frame.
+     * Same cascade as {@link #renderText}.
+     */
+    public static void renderFloatingHeader(GuiGraphics graphics, FloatingHeader header, float left, float top,
+                                            float scale, float alpha, float revealTime, boolean stagger) {
+        if (alpha <= 0.02f || revealTime <= 0) return;
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(snapToPixel(left), snapToPixel(top));
+        graphics.pose().scale(scale, scale);
+        renderHeaderLines(graphics, Minecraft.getInstance().font, header.lines(), alpha, revealTime, stagger);
+        graphics.pose().popMatrix();
+    }
+
+    /** Header lines laid out like a vanilla tooltip, from y = 0 of the current transform. */
+    private static void renderHeaderLines(GuiGraphics graphics, Font font, List<Component> lines, float alpha,
+                                          float revealTime, boolean stagger) {
+        int y = 0;
+        for (int i = 0; i < lines.size(); i++) {
+            float reveal = reveal(revealTime, stagger ? i * HEADER_STEP : 0);
+            if (reveal > 0) {
+                graphics.drawString(font, lines.get(i), 0, y + (stagger ? rise(reveal) : 0),
+                        ARGB.white(alpha * reveal), true);
+            }
+            y += CardLayout.LINE_HEIGHT + (i == 0 ? CardLayout.TITLE_GAP : 0);
+        }
     }
 
     // Cascade timing, in seconds.
