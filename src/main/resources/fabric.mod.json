@@ -32,7 +32,7 @@
 		"java": ">=21",
 		"fabric-api": "*",
 		"cloth-config": "*",
-		"wynntils": "*"
+		"wynntils": ">=${wynntils_version}"
 	},
 	"custom": {
 		"modmenu": {

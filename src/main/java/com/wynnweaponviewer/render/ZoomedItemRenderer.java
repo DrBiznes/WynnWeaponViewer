@@ -3,6 +3,12 @@ package com.wynnweaponviewer.render;
 import com.wynnweaponviewer.WynnWeaponViewer;
 import com.wynnweaponviewer.accessor.ContainerScreenAccessor;
 import com.wynnweaponviewer.accessor.RecipeBookScreenAccessor;
+import com.wynnweaponviewer.card.ItemCardCache;
+import com.wynnweaponviewer.card.ItemCardData;
+import com.wynnweaponviewer.render.card.CardBody;
+import com.wynnweaponviewer.render.card.CardLayout;
+import com.wynnweaponviewer.render.card.ItemCardRenderer;
+import com.wynnweaponviewer.render.card.WynnGlyphs;
 import com.wynnweaponviewer.mixin.GuiGraphicsAccessor;
 import com.wynnweaponviewer.mixin.GuiRenderStateAccessor;
 import com.wynnweaponviewer.config.ModConfig;
@@ -31,6 +37,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 public class ZoomedItemRenderer {
@@ -41,6 +48,17 @@ public class ZoomedItemRenderer {
 
     private static final Pattern EXPIRED_PATTERN = Pattern.compile(".*Expired -.*");
     private static final Pattern FULFILLED_PATTERN = Pattern.compile(".*Fulfilled -.*");
+
+    // Card mode (dev toggle until the card replaces the floating model + renderItemInfo for good).
+    private static boolean cardPreview = false;
+    private static ItemCardData layoutData;
+    private static boolean layoutWithPack;
+    private static final java.util.EnumMap<CardBody.Density, CardLayout> cachedLayouts =
+            new java.util.EnumMap<>(CardBody.Density.class);
+    /** Never shrink the card below the size of a normal tooltip; trim content instead (see CardBody.Density). */
+    private static final float MIN_CARD_SCALE = 1.0f;
+    /** How much of the card's model window the model's square takes up. */
+    private static final float MODEL_WINDOW_FILL = 0.98f;
 
     public static void beginFrame() {
         animationState.beginFrame();
@@ -74,7 +92,10 @@ public class ZoomedItemRenderer {
 
         animationState.update(renderStack);
 
-        renderZoomedItem(graphics, screen, accessor, renderStack, config);
+        // Build/refresh the card snapshot from the live stack (copies lose the Wynntils annotation).
+        Optional<ItemCardData> cardData = ItemCardCache.get(renderStack);
+
+        renderZoomedItem(graphics, screen, accessor, renderStack, cardData, config);
     }
 
     private static ItemStack determineRenderStack(AbstractContainerScreen<?> screen, ContainerScreenAccessor accessor, int mouseX, int mouseY) {
@@ -129,7 +150,7 @@ public class ZoomedItemRenderer {
         return Models.Item.asWynnItem(itemStack, GearBoxItem.class).isPresent();
     }
 
-    private static void renderZoomedItem(GuiGraphics graphics, AbstractContainerScreen<?> screen, ContainerScreenAccessor accessor, ItemStack stack, ModConfig.Config config) {
+    private static void renderZoomedItem(GuiGraphics graphics, AbstractContainerScreen<?> screen, ContainerScreenAccessor accessor, ItemStack stack, Optional<ItemCardData> cardData, ModConfig.Config config) {
         Minecraft mc = Minecraft.getInstance();
 
         int guiLeft = accessor.wynnweapon$getLeftPos();
@@ -142,6 +163,11 @@ public class ZoomedItemRenderer {
         int delayMs = config.appearDelayMs;
         float progress = animationState.getAppearProgress(hasAppearAnimation, delayMs);
         if (progress <= 0) return;
+
+        if (cardPreview && cardData.isPresent()) {
+            renderCardComposition(graphics, accessor, stack, cardData.get(), config, progress, hasAppearAnimation, delayMs);
+            return;
+        }
 
         // Calculate item size based on scale setting
         float scale = config.scale;
@@ -216,28 +242,165 @@ public class ZoomedItemRenderer {
         boolean showInfo = config.showItemInfo && animationState.shouldShowInfo(config.infoDelaySeconds);
         float textAlpha = showInfo ? easeOutCubic(animationState.getTextAppearProgress(config.infoDelaySeconds)) : 0;
 
-        mc.getItemModelResolver().updateForTopItem(itemRenderState, stack, ItemDisplayContext.GUI, mc.level, mc.player, 0);
-
-        GuiRenderState guiRenderState = ((GuiGraphicsAccessor) graphics).wynnweapon$getGuiRenderState();
-
-        float x0 = finalItemX;
-        float y0 = finalItemY;
-        float x1 = finalItemX + scaledSize;
-        float y1 = finalItemY + scaledSize;
-
-        ZoomedItemRenderState state = new ZoomedItemRenderState(
-                itemRenderState,
-                x0, y0, x1, y1,
-                idleAngle,
-                alpha,
-                scissor
-        );
-
-        ((GuiRenderStateAccessor) guiRenderState).wynnweapon$submitPictureInPicture(state);
+        submitModel(graphics, stack, finalItemX, finalItemY, scaledSize, idleAngle, alpha, scissor);
 
         if (showInfo && textAlpha > 0) {
             renderItemInfo(graphics, mc, stack, finalTextX, finalTextY, finalNameAboveY, itemSize, textAlpha * alpha, config.scale, config.itemNameAbove);
         }
+    }
+
+    /** Queues the 3D model as a picture-in-picture texture covering the given GUI-space square. */
+    private static void submitModel(GuiGraphics graphics, ItemStack stack, float x, float y, float size,
+                                    float angle, float alpha, ScreenRectangle scissor) {
+        Minecraft mc = Minecraft.getInstance();
+        mc.getItemModelResolver().updateForTopItem(itemRenderState, stack, ItemDisplayContext.GUI, mc.level, mc.player, 0);
+        GuiRenderState guiRenderState = ((GuiGraphicsAccessor) graphics).wynnweapon$getGuiRenderState();
+        ZoomedItemRenderState state = new ZoomedItemRenderState(
+                itemRenderState, x, y, x + size, y + size, angle, alpha, scissor);
+        ((GuiRenderStateAccessor) guiRenderState).wynnweapon$submitPictureInPicture(state);
+    }
+
+    /**
+     * Card mode: the card is the layout root and the model is drawn inside its window.
+     * Submission order matters - frame, then model, then text - see {@link ItemCardRenderer}.
+     */
+    private static void renderCardComposition(GuiGraphics graphics, ContainerScreenAccessor accessor, ItemStack stack,
+                                              ItemCardData data, ModConfig.Config config, float progress,
+                                              boolean hasAppearAnimation, int delayMs) {
+        Minecraft mc = Minecraft.getInstance();
+        int guiLeft = accessor.wynnweapon$getLeftPos();
+        int guiRight = guiLeft + accessor.wynnweapon$getImageWidth();
+        int screenWidth = mc.getWindow().getGuiScaledWidth();
+        int screenHeight = mc.getWindow().getGuiScaledHeight();
+        boolean leftAligned = config.horizontalAlignment == HorizontalAlignment.LEFT;
+
+        // The free space beside the inventory.
+        float regionX = leftAligned ? PADDING : guiRight + PADDING;
+        float regionW = leftAligned ? guiLeft - PADDING * 2 : screenWidth - guiRight - PADDING * 2;
+        float regionY = PADDING;
+        float regionH = screenHeight - PADDING * 2;
+        if (regionW <= 0 || regionH <= 0) return;
+
+        // One scale per screen, chosen from a typical card rather than this item, so every card is the same size.
+        // config.scale (0.1-1) sizes it within the free space: 1.0 fills it, the default 0.4 gives 70%. Never
+        // smaller than a normal tooltip unless nothing else fits.
+        float sizeFactor = 0.5f + 0.5f * config.scale;
+        float baseScale = Math.max(MIN_CARD_SCALE, ItemCardRenderer.snapScale(sizeFactor * Math.min(
+                regionW / CardLayout.REFERENCE_OUTER_WIDTH, regionH / CardLayout.REFERENCE_OUTER_HEIGHT)));
+
+        // Per item, the model window takes up the slack: as tall as allowed if there's room, shorter if the item
+        // has many rows. Only when even the smallest window can't make room are rows trimmed (CardBody.Density).
+        CardLayout layout = null;
+        float scale = baseScale;
+        for (CardBody.Density density : CardBody.Density.values()) {
+            CardLayout candidate = layoutFor(data, density);
+            float s = Math.min(baseScale, ItemCardRenderer.snapScale(regionW / candidate.outerWidth())); // long names
+            int room = (int) Math.floor(regionH / s) - candidate.outerHeightWithoutWindow();
+            if (room >= candidate.minWindowHeight()) {
+                layout = candidate.withWindowHeight(room);
+                scale = s;
+                break;
+            }
+        }
+        if (layout == null) {
+            // Even the leanest card doesn't fit at this size (tiny window or huge GUI scale): shrink it.
+            CardLayout lean = layoutFor(data, CardBody.Density.MINIMAL);
+            layout = lean.withWindowHeight(lean.minWindowHeight());
+            scale = ItemCardRenderer.snapScale(Math.min(regionW / layout.outerWidth(), regionH / layout.outerHeight()));
+        }
+        float cardW = layout.outerWidth() * scale;
+        float cardH = layout.outerHeight() * scale;
+        float left = regionX + (regionW - cardW) / 2f + config.xOffset;
+        float top = regionY + (regionH - cardH) / 2f + config.yOffset;
+
+        float eased = easeOutCubic(progress);
+        float alpha = 1.0f;
+        ScreenRectangle scissor = null;
+        switch (config.appearAnimation) {
+            case FADE -> alpha = eased;
+            case SCALE -> {
+                // Unsnapped while animating; it settles on the pixel-exact scale when eased reaches 1.
+                float animated = scale * eased;
+                if (animated < 0.01f) return;
+                left += (cardW - layout.outerWidth() * animated) / 2f;
+                top += (cardH - layout.outerHeight() * animated) / 2f;
+                scale = animated;
+            }
+            case SLIDE_LEFT -> left += (1 - eased) * -cardW;
+            case SLIDE_RIGHT -> {
+                if (leftAligned) {
+                    // Slide out from behind the inventory, clipped at its edge.
+                    left += (1 - eased) * (guiLeft - left + PADDING);
+                    scissor = new ScreenRectangle(0, 0, guiLeft, screenHeight);
+                } else {
+                    left += (1 - eased) * cardW;
+                }
+            }
+            case SLIDE_TOP -> top += (1 - eased) * -cardH;
+            case SLIDE_BOTTOM -> top += (1 - eased) * cardH;
+            default -> {}
+        }
+
+        // The card holds the model still unless the user opts in to the idle animation for it too.
+        float idleTime = animationState.getIdleAnimationTime(hasAppearAnimation, delayMs);
+        float idleAngle = 0;
+        float idleScale = 1.0f;
+        ModConfig.IdleAnimation idle = config.cardIdleAnimation ? config.idleAnimation : ModConfig.IdleAnimation.NONE;
+        switch (idle) {
+            case SWING -> idleAngle = (float) Math.sin(idleTime * 0.8) * 2.0f;
+            case PULSE -> idleScale = 1.0f + (float) Math.sin(idleTime * 1.2) * 0.015f;
+            default -> {}
+        }
+
+        ItemCardRenderer.Placement placement = new ItemCardRenderer.Placement(left, top, scale);
+        if (scissor != null) {
+            graphics.enableScissor(scissor.left(), scissor.top(), scissor.right(), scissor.bottom());
+        }
+
+        // 1. frame + model window
+        ItemCardRenderer.renderBackground(graphics, layout, placement, alpha);
+
+        // 2. model, centred in the window
+        float[] window = ItemCardRenderer.windowRect(layout, placement);
+        float windowW = window[2] - window[0];
+        float windowH = window[3] - window[1];
+        float modelSize = Math.min(windowW, windowH) * MODEL_WINDOW_FILL * idleScale;
+        float modelX = window[0] + (windowW - modelSize) / 2f;
+        float modelY = window[1] + (windowH - modelSize) / 2f;
+        submitModel(graphics, stack, modelX, modelY, modelSize, idleAngle, alpha, scissor);
+
+        // 3. text, cascading in from when the card appears (or from the info delay, if that ends later)
+        float revealTime = Math.min(idleTime, animationState.getHoverDuration() - config.infoDelaySeconds);
+        ItemCardRenderer.renderText(graphics, layout, placement, alpha, revealTime, config.cardStaggeredFade);
+
+        if (scissor != null) {
+            graphics.disableScissor();
+        }
+    }
+
+    /** Layouts are rebuilt only when the card data or the resource pack state changes. */
+    private static CardLayout layoutFor(ItemCardData data, CardBody.Density density) {
+        boolean packActive = WynnGlyphs.isPackActive();
+        if (data != layoutData || packActive != layoutWithPack) {
+            cachedLayouts.clear();
+            layoutData = data;
+            layoutWithPack = packActive;
+        }
+        return cachedLayouts.computeIfAbsent(density, d -> CardLayout.build(data, d));
+    }
+
+    public static boolean isCardPreview() {
+        return cardPreview;
+    }
+
+    public static void setCardPreview(boolean enabled) {
+        cardPreview = enabled;
+        invalidateLayouts();
+    }
+
+    public static void invalidateLayouts() {
+        cachedLayouts.clear();
+        layoutData = null;
     }
 
     private static boolean isLeftSideBlocked(AbstractContainerScreen<?> screen, ContainerScreenAccessor accessor) {
@@ -388,9 +551,11 @@ public class ZoomedItemRenderer {
 
     public static void cleanup() {
         animationState.reset();
+        ItemCardCache.clear();
     }
 
     public static void onScreenClose() {
         animationState.reset();
+        ItemCardCache.clear();
     }
 }

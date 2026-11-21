@@ -2,6 +2,10 @@ package com.wynnweaponviewer;
 
 import com.wynnweaponviewer.config.ModConfig;
 import com.wynnweaponviewer.render.ZoomedItemRenderer;
+import com.wynnweaponviewer.render.card.FrameMasks;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -32,6 +36,11 @@ public class WynnWeaponViewer implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		LOGGER.info("Initializing Wynn Weapon Viewer");
+
+		// Tinted card frames are built from the pack's frame sprites; rebuild them whenever the pack changes.
+		ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(
+				Identifier.fromNamespaceAndPath(MOD_ID, "card_frame_masks"),
+				(ResourceManagerReloadListener) manager -> FrameMasks.clear());
 
 		// Register keybinding
 		toggleZoomKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(

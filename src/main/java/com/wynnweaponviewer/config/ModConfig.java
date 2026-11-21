@@ -54,6 +54,10 @@ public class ModConfig implements ModMenuApi {
         // Animation settings (from ItemZoomer)
         public AppearAnimation appearAnimation = AppearAnimation.FADE;
         public IdleAnimation idleAnimation = IdleAnimation.NONE;
+        /** Whether the idle animation also plays on the model inside the item card (off: the card holds it still). */
+        public boolean cardIdleAnimation = false;
+        /** Item card text cascades in line by line (off: all lines fade in together). */
+        public boolean cardStaggeredFade = true;
         public int appearDelayMs = 250;
         public boolean showItemInfo = true;
         public int infoDelaySeconds = 0;
@@ -196,6 +200,24 @@ public class ModConfig implements ModMenuApi {
                     .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.idleAnimation.tooltip"))
                     .setSaveConsumer(newValue -> {
                         config.idleAnimation = newValue;
+                        saveConfig();
+                    })
+                    .build());
+
+            animations.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.wynn_weapon_viewer.option.cardIdleAnimation"), config.cardIdleAnimation)
+                    .setDefaultValue(false)
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.cardIdleAnimation.tooltip"))
+                    .setSaveConsumer(newValue -> {
+                        config.cardIdleAnimation = newValue;
+                        saveConfig();
+                    })
+                    .build());
+
+            animations.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.wynn_weapon_viewer.option.cardStaggeredFade"), config.cardStaggeredFade)
+                    .setDefaultValue(true)
+                    .setTooltip(Component.translatable("config.wynn_weapon_viewer.option.cardStaggeredFade.tooltip"))
+                    .setSaveConsumer(newValue -> {
+                        config.cardStaggeredFade = newValue;
                         saveConfig();
                     })
                     .build());

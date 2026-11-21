@@ -9,7 +9,7 @@ public class AnimationState {
     private double animationStartTime = 0;
     private boolean isActive = false;
 
-    private static final float APPEAR_DURATION = 0.3f;
+    private static final float APPEAR_DURATION = 0.1f;
 
     public void beginFrame() {
     }
