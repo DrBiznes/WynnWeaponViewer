@@ -60,6 +60,8 @@ final class ClothConfigScreen {
                 v -> live().shareAction = v).build());
         sharing.add(toggle(entries, "shareReadAllPages", current.shareReadAllPages, defaults.shareReadAllPages,
                 v -> live().shareReadAllPages = v).build());
+        sharing.add(toggle(entries, "showShareHint", current.showShareHint, defaults.showShareHint,
+                v -> live().showShareHint = v).build());
         general.addEntry(sharing.build());
 
         // --- Display -------------------------------------------------------------------------------------------

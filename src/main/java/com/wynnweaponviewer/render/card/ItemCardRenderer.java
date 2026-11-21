@@ -164,6 +164,12 @@ public final class ItemCardRenderer {
     /** How far (tooltip pixels) a line rises while it fades in. */
     private static final int RISE = 3;
 
+    /** 0-1 fade for things drawn after the card's last line (the share hint): it comes in as the text settles. */
+    public static float trailingReveal(float revealTime, boolean stagger) {
+        if (revealTime <= 0) return 0f;
+        return stagger ? reveal(revealTime, LAST_START + LINE_FADE) : 1f;
+    }
+
     /** 0-1 eased progress of a line that starts at {@code start}. */
     private static float reveal(float time, float start) {
         float t = Math.clamp((time - start) / LINE_FADE, 0f, 1f);

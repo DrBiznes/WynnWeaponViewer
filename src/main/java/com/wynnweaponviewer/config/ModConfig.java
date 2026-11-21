@@ -21,19 +21,23 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 /**
- * The mod's settings and their JSON file ({@code config/wynn_weapon_viewer.json}).
+ * The mod's settings and their JSON file ({@code config/wynnweaponbigger.json}).
  *
  * <p>Plain data only - no Cloth Config or Mod Menu classes - so the mod runs, and the file can be edited by hand,
  * without either installed. The in-game screen lives in {@link ClothConfigScreen} and is only used when Cloth Config
  * is present.
  *
  * <p>Loading is forgiving: each field is read on its own, so a typo in one value only resets that value. Files from
- * v1.0.0 load as they are; options they don't have yet get their defaults, and the file is rewritten with them.
+ * v1.0.0 ({@code config/wynn_weapon_viewer.json}) are renamed to the new name and load as they are; options they
+ * don't have yet get their defaults, and the file is rewritten with them.
  */
 public final class ModConfig {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Path CONFIG_FILE = FabricLoader.getInstance().getConfigDir().resolve("wynn_weapon_viewer.json");
+    private static final Path CONFIG_FILE = FabricLoader.getInstance().getConfigDir().resolve("wynnweaponbigger.json");
+    /** Where v1.0.0 kept the settings. Moved to {@link #CONFIG_FILE} on load. */
+    private static final Path LEGACY_CONFIG_FILE =
+            FabricLoader.getInstance().getConfigDir().resolve("wynn_weapon_viewer.json");
 
     /** {@link Config#cardMaxIdentifications} at or above this shows every identification. */
     public static final int ALL_IDENTIFICATIONS = 21;
@@ -95,7 +99,7 @@ public final class ModConfig {
         public boolean showToggleMessage = true;
 
         // Display
-        public DisplayMode displayMode = DisplayMode.CARD;
+        public DisplayMode displayMode = DisplayMode.FLOATING;
         /** 0.1-1. Floating: share of the free space the model fills. Card: 1.0 fills the free space, 0.4 gives 70%. */
         public float scale = 0.4F;
         public HorizontalAlignment horizontalAlignment = HorizontalAlignment.RIGHT;
@@ -120,7 +124,7 @@ public final class ModConfig {
         public AppearAnimation appearAnimation = AppearAnimation.FADE;
         public int infoDelaySeconds = 0;
         /** Text cascades in line by line instead of just appearing. */
-        public boolean textCascade = false;
+        public boolean textCascade = true;
         public IdleAnimation idleAnimation = IdleAnimation.NONE;
         /** Whether the idle animation also plays on the model inside the item card. */
         public boolean cardIdleAnimation = false;
@@ -129,6 +133,8 @@ public final class ModConfig {
         public ShareAction shareAction = ShareAction.COPY_AND_SAVE;
         /** Flip through the item's tooltip pages first, so powders are on the shared card. */
         public boolean shareReadAllPages = true;
+        /** The small "press ... to share" lines under the preview. */
+        public boolean showShareHint = true;
 
         // Which items get the preview
         public boolean enableWeapons = true;
@@ -171,6 +177,7 @@ public final class ModConfig {
     }
 
     private static boolean load() {
+        migrateLegacyFile();
         if (!Files.exists(CONFIG_FILE)) {
             config = new Config();
             write(GSON.toJsonTree(config));
@@ -211,6 +218,22 @@ public final class ModConfig {
         JsonElement normalized = GSON.toJsonTree(config);
         if (!GSON.toJson(normalized).equals(GSON.toJson(json))) write(normalized);
         return true;
+    }
+
+    /** Renames a v1.0.0 config file to the new name, unless a file with the new name is already there. */
+    private static void migrateLegacyFile() {
+        if (Files.exists(CONFIG_FILE) || !Files.exists(LEGACY_CONFIG_FILE)) return;
+        try {
+            Files.move(LEGACY_CONFIG_FILE, CONFIG_FILE);
+            WynnWeaponViewer.LOGGER.info("Moved {} to {}", LEGACY_CONFIG_FILE.getFileName(), CONFIG_FILE.getFileName());
+        } catch (IOException moveFailed) {
+            // Couldn't rename it (locked, permissions...): copy it instead, so the settings still carry over.
+            try {
+                Files.copy(LEGACY_CONFIG_FILE, CONFIG_FILE);
+            } catch (IOException e) {
+                WynnWeaponViewer.LOGGER.warn("Couldn't move {} to {}", LEGACY_CONFIG_FILE, CONFIG_FILE, e);
+            }
+        }
     }
 
     /** Clamps numbers into their ranges. */

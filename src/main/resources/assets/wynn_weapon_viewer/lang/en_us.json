@@ -11,6 +11,11 @@
 	"toast.wynn_weapon_viewer.share.saved.file": "screenshots/%s",
 	"toast.wynn_weapon_viewer.share.failed": "Couldn't share item card",
 	"toast.wynn_weapon_viewer.share.failed.detail": "See the game log for details",
+
+	"hint.wynn_weapon_viewer.share.chat": "%s to share in chat",
+	"hint.wynn_weapon_viewer.share.image": "%s to share as image",
+	"hint.wynn_weapon_viewer.share.image.save": "%s to save as image",
+
 	"category.wynn_weapon_viewer.general": "Wynn Weapon Bigger",
 
 	"config.wynn_weapon_viewer.title": "Wynn Weapon Bigger",
@@ -22,7 +27,7 @@
 	"config.wynn_weapon_viewer.unit.ms": "%s ms",
 	"config.wynn_weapon_viewer.unit.seconds": "%s s",
 
-	"config.wynn_weapon_viewer.general.controls": "§7Toggle the preview with the Toggle Item Zoom key (default: period). Share an item's card with Ctrl+C while hovering it in any inventory. Change keys in Options → Controls.\n§7Commands: /wwb on, off, toggle, config, reload",
+	"config.wynn_weapon_viewer.general.controls": "§7Toggle the preview with the Toggle Item Zoom key (default: period). Share an item's card with Ctrl+C while hovering it in any inventory. Change keys in Options → Controls.\n§7Commands: /wwb toggle, /wwb config, /wwb reload (type /wwb for help)",
 
 	"config.wynn_weapon_viewer.option.enabled": "Enabled",
 	"config.wynn_weapon_viewer.option.enabled.tooltip": "Show the big item preview in inventories. The Toggle Item Zoom key and /wwb toggle switch this too.",
@@ -37,6 +42,8 @@
 	"config.wynn_weapon_viewer.option.shareAction.save_only": "Save Only",
 	"config.wynn_weapon_viewer.option.shareReadAllPages": "Read All Tooltip Pages First",
 	"config.wynn_weapon_viewer.option.shareReadAllPages.tooltip": "Before sharing, flip through the item's tooltip pages (like Wynntils' chat item share does) so its powders show on the card. Takes about a second. Off: shares right away with what's already known.",
+	"config.wynn_weapon_viewer.option.showShareHint": "Show Share Hint",
+	"config.wynn_weapon_viewer.option.showShareHint.tooltip": "Small print under the preview naming the keys that share the item: Wynntils' Share Item key (in chat) and Ctrl+C (as an image). Shared images never include it.",
 
 	"config.wynn_weapon_viewer.option.displayMode": "Display Mode",
 	"config.wynn_weapon_viewer.option.displayMode.tooltip": "Item Card: the item inside a Wynncraft-style card with its rolls, powders and scales.\nFloating Item: just the big item, with its name and badges under it.",

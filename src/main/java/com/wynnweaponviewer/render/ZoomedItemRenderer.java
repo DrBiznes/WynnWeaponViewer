@@ -9,6 +9,7 @@ import com.wynnweaponviewer.render.card.CardBody;
 import com.wynnweaponviewer.render.card.CardLayout;
 import com.wynnweaponviewer.render.card.FloatingHeader;
 import com.wynnweaponviewer.render.card.ItemCardRenderer;
+import com.wynnweaponviewer.render.card.ShareHint;
 import com.wynnweaponviewer.render.card.WynnGlyphs;
 import com.wynnweaponviewer.mixin.GuiGraphicsAccessor;
 import com.wynnweaponviewer.mixin.GuiRenderStateAccessor;
@@ -53,7 +54,7 @@ public class ZoomedItemRenderer {
     private static final Pattern EXPIRED_PATTERN = Pattern.compile(".*Expired -.*");
     private static final Pattern FULFILLED_PATTERN = Pattern.compile(".*Fulfilled -.*");
 
-    // Card mode is the default; in floating mode the model gets just the card's header under it.
+    // Floating mode (the default) gives the model just the card's header under it; card mode puts it in a card.
     private static FloatingHeader floatingHeader;
     private static ItemCardData floatingHeaderData;
     private static boolean floatingHeaderWithPack;
@@ -268,9 +269,24 @@ public class ZoomedItemRenderer {
 
         if (cardData.isPresent()) {
             // Wynntils-parsed header (name + overall roll + badges) instead of the raw tooltip lines.
+            float centerX = finalTextX + itemSize / 2f;
+            float hintTop = finalTextY;
             if (config.showItemInfo) {
-                renderFloatingHeader(graphics, cardData.get(), config, finalTextX + itemSize / 2f, finalTextY,
+                hintTop = renderFloatingHeader(graphics, cardData.get(), config, centerX, finalTextY,
                         finalItemY - textGap, availableWidth, alpha, idleTime, scissor);
+            }
+            ShareHint hint = ShareHint.forItem(stack, true);
+            if (hint != null) {
+                float hintScale = ItemCardRenderer.snapScale(Math.min(config.scale * 2.5f,
+                        (float) availableWidth / hint.width()));
+                float reveal = ItemCardRenderer.trailingReveal(revealTime(idleTime, config), config.textCascade);
+                if (scissor != null) {
+                    graphics.enableScissor(scissor.left(), scissor.top(), scissor.right(), scissor.bottom());
+                }
+                hint.render(graphics, centerX, hintTop, hintScale, alpha * reveal);
+                if (scissor != null) {
+                    graphics.disableScissor();
+                }
             }
         } else if (showInfo && textAlpha > 0) {
             renderItemInfo(graphics, mc, stack, finalTextX, finalTextY, finalNameAboveY, itemSize, textAlpha * alpha, config.scale, config.itemNameAbove);
@@ -321,6 +337,10 @@ public class ZoomedItemRenderer {
         float baseScale = Math.max(MIN_CARD_SCALE, ItemCardRenderer.snapScale(sizeFactor * Math.min(
                 regionW / CardLayout.REFERENCE_OUTER_WIDTH, regionH / CardLayout.REFERENCE_OUTER_HEIGHT)));
 
+        // The share hint goes under the card, so leave room for it (in card pixels: it's drawn at the card's scale).
+        ShareHint hint = ShareHint.forItem(stack, true);
+        int hintHeight = hint == null ? 0 : hint.height();
+
         // Per item, the model window takes up the slack: as tall as allowed if there's room, shorter if the item
         // has many rows. Only when even the smallest window can't make room are rows trimmed (CardBody.Density).
         CardLayout layout = null;
@@ -328,7 +348,7 @@ public class ZoomedItemRenderer {
         for (CardBody.Density density : CardBody.Density.values()) {
             CardLayout candidate = layoutFor(data, density);
             float s = Math.min(baseScale, ItemCardRenderer.snapScale(regionW / candidate.outerWidth())); // long names
-            int room = (int) Math.floor(regionH / s) - candidate.outerHeightWithoutWindow();
+            int room = (int) Math.floor(regionH / s) - candidate.outerHeightWithoutWindow() - hintHeight;
             if (room >= candidate.minWindowHeight()) {
                 layout = candidate.withWindowHeight(room);
                 scale = s;
@@ -339,12 +359,13 @@ public class ZoomedItemRenderer {
             // Even the leanest card doesn't fit at this size (tiny window or huge GUI scale): shrink it.
             CardLayout lean = layoutFor(data, CardBody.Density.MINIMAL);
             layout = lean.withWindowHeight(lean.minWindowHeight());
-            scale = ItemCardRenderer.snapScale(Math.min(regionW / layout.outerWidth(), regionH / layout.outerHeight()));
+            scale = ItemCardRenderer.snapScale(Math.min(regionW / layout.outerWidth(),
+                    regionH / (layout.outerHeight() + hintHeight)));
         }
         float cardW = layout.outerWidth() * scale;
         float cardH = layout.outerHeight() * scale;
         float left = regionX + (regionW - cardW) / 2f + config.xOffset;
-        float top = regionY + (regionH - cardH) / 2f + config.yOffset;
+        float top = regionY + (regionH - cardH - hintHeight * scale) / 2f + config.yOffset;
 
         float eased = easeOutCubic(progress);
         float alpha = 1.0f;
@@ -391,9 +412,15 @@ public class ZoomedItemRenderer {
         }
 
         // Text cascades in from when the card appears (or from the info delay, if that ends later).
-        float revealTime = Math.min(idleTime, animationState.getHoverDuration() - config.infoDelaySeconds);
+        float revealTime = revealTime(idleTime, config);
         drawCard(graphics, itemRenderState, stack, layout, placement, alpha, idleAngle, idleScale,
                 revealTime, config.textCascade, scissor);
+
+        if (hint != null) {
+            float hintScale = Math.min(scale, ItemCardRenderer.snapScale(regionW / hint.width()));
+            hint.render(graphics, left + placement.width(layout) / 2f, top + placement.height(layout), hintScale,
+                    alpha * ItemCardRenderer.trailingReveal(revealTime, config.textCascade));
+        }
 
         if (scissor != null) {
             graphics.disableScissor();
@@ -435,8 +462,10 @@ public class ZoomedItemRenderer {
     /**
      * Card-less mode's text: the card header floating under the model (or above it with itemNameAbove), centred on
      * it and sized like the old item info text, shrunk if it would be wider than the free space.
+     *
+     * @return where whatever goes under the model should start: below the header, or {@code belowTop} if it's above
      */
-    private static void renderFloatingHeader(GuiGraphics graphics, ItemCardData data, ModConfig.Config config,
+    private static float renderFloatingHeader(GuiGraphics graphics, ItemCardData data, ModConfig.Config config,
                                              float centerX, float belowTop, float aboveBottom, int maxWidth,
                                              float alpha, float idleTime, ScreenRectangle scissor) {
         FloatingHeader header = floatingHeaderFor(data);
@@ -447,7 +476,7 @@ public class ZoomedItemRenderer {
         float top = config.itemNameAbove ? aboveBottom - height : belowTop;
 
         // Same reveal as the card: from when the model appears, or from the info delay if that ends later.
-        float revealTime = Math.min(idleTime, animationState.getHoverDuration() - config.infoDelaySeconds);
+        float revealTime = revealTime(idleTime, config);
         if (scissor != null) {
             graphics.enableScissor(scissor.left(), scissor.top(), scissor.right(), scissor.bottom());
         }
@@ -456,6 +485,12 @@ public class ZoomedItemRenderer {
         if (scissor != null) {
             graphics.disableScissor();
         }
+        return config.itemNameAbove ? belowTop : top + height;
+    }
+
+    /** Seconds since the item's text started appearing: when the model did, or after the info delay if later. */
+    private static float revealTime(float idleTime, ModConfig.Config config) {
+        return Math.min(idleTime, animationState.getHoverDuration() - config.infoDelaySeconds);
     }
 
     private static FloatingHeader floatingHeaderFor(ItemCardData data) {

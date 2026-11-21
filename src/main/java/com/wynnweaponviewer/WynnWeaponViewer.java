@@ -4,6 +4,7 @@ import com.wynnweaponviewer.config.ModConfig;
 import com.wynnweaponviewer.render.ZoomedItemPIPRenderer;
 import com.wynnweaponviewer.render.ZoomedItemRenderer;
 import com.wynnweaponviewer.render.card.FrameMasks;
+import com.wynnweaponviewer.render.card.ShareHint;
 import com.wynnweaponviewer.share.CardShare;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.server.packs.PackType;
@@ -51,7 +52,10 @@ public class WynnWeaponViewer implements ClientModInitializer {
 		// Tinted card frames are built from the pack's frame sprites; rebuild them whenever the pack changes.
 		ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(
 				Identifier.fromNamespaceAndPath(MOD_ID, "card_frame_masks"),
-				(ResourceManagerReloadListener) manager -> FrameMasks.clear());
+				(ResourceManagerReloadListener) manager -> {
+					FrameMasks.clear();
+					ShareHint.clearCache();
+				});
 
 		// The big model is drawn as a picture-in-picture element. Fabric adds this renderer to the game's
 		// GuiRenderer (and makes more of it when several are drawn in one frame); the GuiRenderer closes it.
@@ -132,15 +136,21 @@ public class WynnWeaponViewer implements ClientModInitializer {
 		setZoomEnabled(!isZoomEnabled());
 		LOGGER.info("Weapon zoom toggled: {}", isZoomEnabled() ? "ON" : "OFF");
 		if (ModConfig.shouldShowToggleMessage()) {
-			sendChatMessage(isZoomEnabled()
-					? "\u00A76[Weapon Viewer] Your weapon grows gargantuan (but only in your inventory)"
-					: "\u00A76[Weapon Viewer] Your weapon weeps, for it yearns to be big!");
+			sendChatMessage(ModCommands.prefixed(isZoomEnabled()
+					? "Your weapon grows gargantuan (but only in your inventory)"
+					: "Your weapon weeps, for it yearns to be big!"));
 		}
 	}
 
 	/** The saved "Enabled" option is the one on/off switch; the keybind, commands and config screen all set it. */
 	public static void setZoomEnabled(boolean enabled) {
 		ModConfig.setEnabled(enabled);
+	}
+
+	/** This mod's share key (used with Ctrl); null before the mod has initialised. */
+	@Nullable
+	public static KeyMapping shareCardKey() {
+		return shareCardKey;
 	}
 
 	public static boolean isZoomEnabled() {
@@ -159,10 +169,10 @@ public class WynnWeaponViewer implements ClientModInitializer {
 		pendingScreen = screen;
 	}
 
-	private static void sendChatMessage(String message) {
+	private static void sendChatMessage(Component message) {
 		Minecraft client = Minecraft.getInstance();
 		if (client.player != null) {
-			client.player.displayClientMessage(Component.literal(message), false);
+			client.player.displayClientMessage(message, false);
 		}
 	}
 }
