@@ -41,6 +41,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -49,6 +51,12 @@ public class ZoomedItemRenderer {
 
     private static final int PADDING = 5;
     private static final AnimationState animationState = new AnimationState();
+
+    /** How long an emptied slot keeps its item on screen; covers the offhand round trip of a tooltip page cycle. */
+    private static final long SWAP_GRACE_MS = 150;
+    private static @Nullable Slot swapSlot;
+    private static ItemStack swapStack = ItemStack.EMPTY;
+    private static long swapSeenAtMs;
     private static final ItemStackRenderState itemRenderState = new ItemStackRenderState();
 
     private static final Pattern EXPIRED_PATTERN = Pattern.compile(".*Expired -.*");
@@ -80,31 +88,41 @@ public class ZoomedItemRenderer {
 
     public static void render(GuiGraphics graphics, AbstractContainerScreen<?> screen, int mouseX, int mouseY) {
         if (!WynnWeaponViewer.shouldRenderZoom()) {
-            animationState.reset();
+            resetHover();
             return;
         }
 
         ModConfig.Config config = ModConfig.getConfig();
 
         if (!(screen instanceof ContainerScreenAccessor accessor)) {
-            animationState.reset();
+            resetHover();
             return;
         }
 
         if (isLeftSideBlocked(screen, accessor) && config.horizontalAlignment == HorizontalAlignment.LEFT) {
-            animationState.reset();
+            resetHover();
             return;
         }
 
         // Determine the item to render (cursor item takes priority, then hovered slot)
-        ItemStack renderStack = determineRenderStack(screen, accessor, mouseX, mouseY);
+        Slot hoveredSlot = accessor.wynnweapon$getHoveredSlot();
+        ItemStack renderStack = determineRenderStack(screen, hoveredSlot);
+        boolean carried = !renderStack.isEmpty() && renderStack == screen.getMenu().getCarried();
+        long now = System.currentTimeMillis();
 
         if (renderStack.isEmpty()) {
-            animationState.reset();
-            return;
+            renderStack = heldThroughSwap(hoveredSlot, now);
+            if (renderStack.isEmpty()) {
+                resetHover();
+                return;
+            }
+        } else if (!carried) {
+            swapSlot = hoveredSlot;
+            swapStack = renderStack;
+            swapSeenAtMs = now;
         }
 
-        animationState.update(renderStack);
+        animationState.update(renderStack, carried ? null : hoveredSlot);
 
         // Build/refresh the card snapshot from the live stack (copies lose the Wynntils annotation).
         Optional<ItemCardData> cardData = ItemCardCache.get(renderStack);
@@ -112,7 +130,26 @@ public class ZoomedItemRenderer {
         renderZoomedItem(graphics, screen, accessor, renderStack, cardData, config);
     }
 
-    private static ItemStack determineRenderStack(AbstractContainerScreen<?> screen, ContainerScreenAccessor accessor, int mouseX, int mouseY) {
+    /**
+     * Wynncraft cycles an item's tooltip page when the player presses the swap-hands key over it: the item hops
+     * into the offhand and the server sends it straight back with the next page's lore. For that moment the slot is
+     * empty, so while the mouse stays on the same slot we keep showing the last item instead of starting over.
+     */
+    private static ItemStack heldThroughSwap(@Nullable Slot hoveredSlot, long now) {
+        if (hoveredSlot != null && hoveredSlot == swapSlot && now - swapSeenAtMs < SWAP_GRACE_MS) {
+            return swapStack;
+        }
+        return ItemStack.EMPTY;
+    }
+
+    private static void resetHover() {
+        animationState.reset();
+        swapSlot = null;
+        swapStack = ItemStack.EMPTY;
+        swapSeenAtMs = 0;
+    }
+
+    private static ItemStack determineRenderStack(AbstractContainerScreen<?> screen, @Nullable Slot hoveredSlot) {
         // Check cursor stack first
         ItemStack cursorStack = screen.getMenu().getCarried();
         if (!cursorStack.isEmpty() && isValidWynncraftItem(cursorStack) && !isTradeMarketSoldItem(cursorStack)) {
@@ -120,7 +157,6 @@ public class ZoomedItemRenderer {
         }
 
         // Then check hovered slot
-        Slot hoveredSlot = accessor.wynnweapon$getHoveredSlot();
         if (hoveredSlot != null && hoveredSlot.hasItem()) {
             ItemStack slotStack = hoveredSlot.getItem();
             if (!slotStack.isEmpty() && isValidWynncraftItem(slotStack) && !isTradeMarketSoldItem(slotStack)) {
@@ -662,13 +698,13 @@ public class ZoomedItemRenderer {
     }
 
     public static void cleanup() {
-        animationState.reset();
+        resetHover();
         ItemCardCache.clear();
         invalidateLayouts();
     }
 
     public static void onScreenClose() {
-        animationState.reset();
+        resetHover();
         ItemCardCache.clear();
         invalidateLayouts();
     }

@@ -1,11 +1,18 @@
 package com.wynnweaponviewer.render;
 
 import com.mojang.blaze3d.Blaze3D;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 public class AnimationState {
 
     private ItemStack currentStack = ItemStack.EMPTY;
+    private @Nullable Item currentItem;
+    private String currentName = "";
+    /** The slot the animation belongs to; null while the item is on the cursor, so it adopts the slot it lands in. */
+    private @Nullable Slot currentSlot;
     private double animationStartTime = 0;
     private boolean isActive = false;
 
@@ -14,14 +21,29 @@ public class AnimationState {
     public void beginFrame() {
     }
 
-    public void update(ItemStack stack) {
+    /**
+     * Restarts the animation only when a different item is hovered. The comparison is by slot and item name, not the
+     * full stack: cycling the tooltip page swaps in a stack with new lore, which should not count as a new item.
+     *
+     * @param slot the hovered slot, or null when the item is on the cursor
+     */
+    public void update(ItemStack stack, @Nullable Slot slot) {
         if (stack == null || stack.isEmpty()) {
             reset();
             return;
         }
 
-        if (!ItemStack.matches(currentStack, stack)) {
-            currentStack = stack.copy();
+        String name = stack.getHoverName().getString();
+        boolean sameItem = isActive
+                && stack.getItem() == currentItem
+                && name.equals(currentName)
+                && (slot == null || currentSlot == null || slot == currentSlot);
+
+        currentStack = stack;
+        currentSlot = slot;
+        if (!sameItem) {
+            currentItem = stack.getItem();
+            currentName = name;
             animationStartTime = Blaze3D.getTime();
             isActive = true;
         }
@@ -29,6 +51,9 @@ public class AnimationState {
 
     public void reset() {
         currentStack = ItemStack.EMPTY;
+        currentItem = null;
+        currentName = "";
+        currentSlot = null;
         animationStartTime = 0;
         isActive = false;
     }
