@@ -11,6 +11,7 @@
     "PictureInPictureRendererAccessor",
     "GameRendererAccessor",
     "MinecraftMixin",
+    "ScreenMixin",
     "WindowMixin"
   ],
   "mixins": [],

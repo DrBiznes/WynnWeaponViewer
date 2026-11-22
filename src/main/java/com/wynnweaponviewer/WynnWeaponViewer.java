@@ -112,13 +112,9 @@ public class WynnWeaponViewer implements ClientModInitializer {
 					}
 				});
 
-				// Render events
+				// Render events. The item itself is drawn by ScreenMixin, before the tooltip, so tooltips cover it.
 				ScreenEvents.beforeRender(screen).register((screen1, graphics, mouseX, mouseY, delta) -> {
 					ZoomedItemRenderer.beginFrame();
-				});
-
-				ScreenEvents.afterRender(screen).register((screen1, graphics, mouseX, mouseY, delta) -> {
-					ZoomedItemRenderer.render(graphics, containerScreen, mouseX, mouseY);
 				});
 
 				// Cleanup on screen close
