@@ -9,10 +9,7 @@
     "GuiGraphicsAccessor",
     "GuiRenderStateAccessor",
     "PictureInPictureRendererAccessor",
-    "GameRendererAccessor",
-    "MinecraftMixin",
-    "ScreenMixin",
-    "WindowMixin"
+    "ScreenMixin"
   ],
   "mixins": [],
   "injectors": {

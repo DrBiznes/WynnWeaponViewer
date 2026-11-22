@@ -75,20 +75,6 @@ public final class ModConfig {
         PULSE
     }
 
-    public enum ShareAction {
-        COPY_AND_SAVE,
-        COPY_ONLY,
-        SAVE_ONLY;
-
-        public boolean copies() {
-            return this != SAVE_ONLY;
-        }
-
-        public boolean keepsFile() {
-            return this != COPY_ONLY;
-        }
-    }
-
     /**
      * Field names are the JSON keys. The v1.0.0 names are kept as they were so old files carry over.
      * Ranges are enforced by {@link #sanitize}.
@@ -106,7 +92,7 @@ public final class ModConfig {
         public int xOffset = 0;
         public int yOffset = 0;
 
-        // Item card contents (also used for shared cards)
+        // Item card contents
         /** 0 hides them, {@link #ALL_IDENTIFICATIONS} shows all. */
         public int cardMaxIdentifications = ALL_IDENTIFICATIONS;
         public boolean cardShowPowders = true;
@@ -129,11 +115,8 @@ public final class ModConfig {
         /** Whether the idle animation also plays on the model inside the item card. */
         public boolean cardIdleAnimation = false;
 
-        // Sharing (Ctrl+C)
-        public ShareAction shareAction = ShareAction.COPY_AND_SAVE;
-        /** Flip through the item's tooltip pages first, so powders are on the shared card. */
-        public boolean shareReadAllPages = true;
-        /** The small "press ... to share" lines under the preview. */
+        // Sharing
+        /** The small lines under the preview naming Wynntils' share and screenshot keys. */
         public boolean showShareHint = true;
 
         // Which items get the preview

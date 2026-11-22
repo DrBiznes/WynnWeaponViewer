@@ -1,20 +1,8 @@
 {
 	"key.wynn_weapon_viewer.toggle_zoom": "Toggle Item Zoom",
-	"key.wynn_weapon_viewer.share_card": "Share Item Card (with Ctrl, in inventories)",
-
-	"toast.wynn_weapon_viewer.share.reading": "Reading item pages...",
-	"toast.wynn_weapon_viewer.share.working": "Sharing item card...",
-	"toast.wynn_weapon_viewer.share.copied": "Item image copied",
-	"toast.wynn_weapon_viewer.share.copied.detail": "%s",
-	"toast.wynn_weapon_viewer.share.saved": "Item card saved",
-	"toast.wynn_weapon_viewer.share.saved.detail": "Couldn't copy it; it's in your screenshots folder",
-	"toast.wynn_weapon_viewer.share.saved.file": "screenshots/%s",
-	"toast.wynn_weapon_viewer.share.failed": "Couldn't share item card",
-	"toast.wynn_weapon_viewer.share.failed.detail": "See the game log for details",
 
 	"hint.wynn_weapon_viewer.share.chat": "%s to share in chat",
-	"hint.wynn_weapon_viewer.share.image": "%s to share as image",
-	"hint.wynn_weapon_viewer.share.image.save": "%s to save as image",
+	"hint.wynn_weapon_viewer.share.screenshot": "%s to screenshot",
 
 	"category.wynn_weapon_viewer.general": "Wynn Weapon Bigger",
 
@@ -27,23 +15,16 @@
 	"config.wynn_weapon_viewer.unit.ms": "%s ms",
 	"config.wynn_weapon_viewer.unit.seconds": "%s s",
 
-	"config.wynn_weapon_viewer.general.controls": "§7Toggle the preview with the Toggle Item Zoom key (default: period). Share an item's card with Ctrl+C while hovering it in any inventory. Change keys in Options → Controls.\n§7Commands: /wwb toggle, /wwb config, /wwb reload (type /wwb for help)",
+	"config.wynn_weapon_viewer.general.controls": "§7Toggle the preview with the Toggle Item Zoom key (default: period). Share or screenshot the hovered item with Wynntils' Share Item and Screenshot Item keys. Change keys in Options → Controls.\n§7Commands: /wwb toggle, /wwb config, /wwb reload (type /wwb for help)",
 
 	"config.wynn_weapon_viewer.option.enabled": "Enabled",
 	"config.wynn_weapon_viewer.option.enabled.tooltip": "Show the big item preview in inventories. The Toggle Item Zoom key and /wwb toggle switch this too.",
 	"config.wynn_weapon_viewer.option.showToggleMessage": "Toggle Message in Chat",
 	"config.wynn_weapon_viewer.option.showToggleMessage.tooltip": "Say so in chat when the toggle key turns the preview on or off.",
 
-	"config.wynn_weapon_viewer.subcategory.sharing": "Sharing (Ctrl+C)",
-	"config.wynn_weapon_viewer.option.shareAction": "After Ctrl+C",
-	"config.wynn_weapon_viewer.option.shareAction.tooltip": "What happens to a shared item card's image. Saved cards go in your screenshots folder, named after the item and its roll.",
-	"config.wynn_weapon_viewer.option.shareAction.copy_and_save": "Copy + Save",
-	"config.wynn_weapon_viewer.option.shareAction.copy_only": "Copy Only",
-	"config.wynn_weapon_viewer.option.shareAction.save_only": "Save Only",
-	"config.wynn_weapon_viewer.option.shareReadAllPages": "Read All Tooltip Pages First",
-	"config.wynn_weapon_viewer.option.shareReadAllPages.tooltip": "Before sharing, flip through the item's tooltip pages (like Wynntils' chat item share does) so its powders show on the card. Takes about a second. Off: shares right away with what's already known.",
+	"config.wynn_weapon_viewer.subcategory.sharing": "Sharing",
 	"config.wynn_weapon_viewer.option.showShareHint": "Show Share Hint",
-	"config.wynn_weapon_viewer.option.showShareHint.tooltip": "Small print under the preview naming the keys that share the item: Wynntils' Share Item key (in chat) and Ctrl+C (as an image). Shared images never include it.",
+	"config.wynn_weapon_viewer.option.showShareHint.tooltip": "Small print under the preview naming Wynntils' Share Item key (links the item in chat) and Screenshot Item key (takes an image of its tooltip).",
 
 	"config.wynn_weapon_viewer.option.displayMode": "Display Mode",
 	"config.wynn_weapon_viewer.option.displayMode.tooltip": "Item Card: the item inside a Wynncraft-style card with its rolls, powders and scales.\nFloating Item: just the big item, with its name and badges under it.",
@@ -61,7 +42,7 @@
 	"config.wynn_weapon_viewer.option.yOffset.tooltip": "Moves the preview down (positive) or up (negative), in GUI pixels. -500 to 500.",
 
 	"config.wynn_weapon_viewer.subcategory.card": "Item Card",
-	"config.wynn_weapon_viewer.subcategory.card.tooltip": "What the item card shows. Also used for cards you share with Ctrl+C, in either display mode.",
+	"config.wynn_weapon_viewer.subcategory.card.tooltip": "What the item card shows.",
 	"config.wynn_weapon_viewer.option.cardMaxIdentifications": "Identifications",
 	"config.wynn_weapon_viewer.option.cardMaxIdentifications.tooltip": "How many identifications (with their roll %) the card lists. Extra ones are summed up as \"+N more\". Cards with very many rows may still be trimmed to fit small screens.",
 	"config.wynn_weapon_viewer.option.cardMaxIdentifications.none": "None",
@@ -105,7 +86,7 @@
 	"config.wynn_weapon_viewer.option.cardIdleAnimation": "Idle Animation in Item Card",
 	"config.wynn_weapon_viewer.option.cardIdleAnimation.tooltip": "Also play the idle animation on the item inside the card. Off: the card holds it still.",
 
-	"config.wynn_weapon_viewer.filters.description": "§7Which items get the big preview. Ctrl+C sharing works on any item with a card, whatever is picked here.",
+	"config.wynn_weapon_viewer.filters.description": "§7Which items get the big preview.",
 	"config.wynn_weapon_viewer.option.enableWeapons": "Weapons",
 	"config.wynn_weapon_viewer.option.enableWeapons.tooltip": "Spears, bows, daggers, wands and reliks.",
 	"config.wynn_weapon_viewer.option.enableArmor": "Armor",

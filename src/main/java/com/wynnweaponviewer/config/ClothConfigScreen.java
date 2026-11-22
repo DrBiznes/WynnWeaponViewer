@@ -5,7 +5,6 @@ import com.wynnweaponviewer.config.ModConfig.AppearAnimation;
 import com.wynnweaponviewer.config.ModConfig.Config;
 import com.wynnweaponviewer.config.ModConfig.DisplayMode;
 import com.wynnweaponviewer.config.ModConfig.IdleAnimation;
-import com.wynnweaponviewer.config.ModConfig.ShareAction;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
@@ -56,10 +55,6 @@ final class ClothConfigScreen {
         general.addEntry(entries.startTextDescription(text("general.controls")).build());
 
         SubCategoryBuilder sharing = entries.startSubCategory(text("subcategory.sharing")).setExpanded(true);
-        sharing.add(enumSelector(entries, "shareAction", ShareAction.class, current.shareAction, defaults.shareAction,
-                v -> live().shareAction = v).build());
-        sharing.add(toggle(entries, "shareReadAllPages", current.shareReadAllPages, defaults.shareReadAllPages,
-                v -> live().shareReadAllPages = v).build());
         sharing.add(toggle(entries, "showShareHint", current.showShareHint, defaults.showShareHint,
                 v -> live().showShareHint = v).build());
         general.addEntry(sharing.build());

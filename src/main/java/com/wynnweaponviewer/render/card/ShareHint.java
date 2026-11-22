@@ -1,7 +1,9 @@
 package com.wynnweaponviewer.render.card;
 
 import com.wynntils.core.components.Managers;
+import com.wynntils.core.consumers.features.Feature;
 import com.wynntils.features.chat.ChatItemFeature;
+import com.wynntils.features.inventory.ItemScreenshotFeature;
 import com.wynntils.models.items.items.game.GearItem;
 import com.wynntils.core.components.Models;
 import com.wynnweaponviewer.WynnWeaponViewer;
@@ -17,22 +19,22 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
-import net.minecraft.util.Util;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * The small print under the preview that says how to share the item:
  * <pre>
  *   F5 TO SHARE IN CHAT
- *   CTRL+C TO SHARE AS IMAGE
+ *   F4 TO SCREENSHOT
  * </pre>
- * The first line names whatever key Wynntils' "Share Item" is bound to, and is left out when that key is unbound,
- * Wynntils' chat item feature is off, or the item isn't one Wynntils can share (unidentified gear). The second names
- * this mod's share key.
+ * The lines name whatever keys Wynntils' "Share Item" and "Screenshot Item" are bound to. Each is left out when its
+ * key is unbound or its Wynntils feature is off; the chat line also when the item isn't one Wynntils can share in
+ * chat (unidentified gear).
  *
  * <p>Drawn in Wynntils' copy of Wynncraft's 5-pixel small-caps font, which ships with Wynntils, so it works without
  * the Wynncraft resource pack. That font has letters, digits and a few symbols only; anything else (spaces, "+",
@@ -46,8 +48,9 @@ public final class ShareHint {
     private static final String SMALL_GLYPHS = "abcdefghijklmnopqrstuvwxyz?[]\\%&0123456789!()<>=";
     private static final int SMALL_GLYPH_BASE = 0xE040;
 
-    /** The name of Wynntils' chat item share keybind (its translation key, also its options.txt name). */
+    /** Wynntils' keybind names (their translation keys, also their options.txt names). */
     private static final String WYNNTILS_SHARE_KEY = "wynntils.keybind.shareItem";
+    private static final String WYNNTILS_SCREENSHOT_KEY = "wynntils.keybind.screenshotItem";
     private static final String LANG = "hint." + WynnWeaponViewer.MOD_ID + ".share.";
 
     public static final int LINE_HEIGHT = 8;
@@ -56,7 +59,7 @@ public final class ShareHint {
     private static final int TEXT_COLOR = 0x8C8C8C;
     private static final int KEY_COLOR = 0xE6E6E6;
 
-    /** Rebuilt only when something it shows changes (keys, share setting, which lines apply). */
+    /** Rebuilt only when something it shows changes (keys, which lines apply). */
     @Nullable
     private static String cachedSignature;
     @Nullable
@@ -82,28 +85,20 @@ public final class ShareHint {
         return GAP + lines.size() * LINE_HEIGHT;
     }
 
-    /**
-     * The hint for {@code stack}, or null if it's turned off or there's no way to share this item.
-     *
-     * @param hasCard whether the item has a card (Ctrl+C shares cards only)
-     */
+    /** The hint for {@code stack}, or null if it's turned off or Wynntils offers no way to share this item. */
     @Nullable
-    public static ShareHint forItem(ItemStack stack, boolean hasCard) {
+    public static ShareHint forItem(ItemStack stack) {
         if (!ModConfig.getConfig().showShareHint) return null;
 
-        String chatKey = canShareInChat(stack) ? wynntilsShareKeyName() : null;
-        String imageKey = hasCard ? cardShareKeyName() : null;
-        if (chatKey == null && imageKey == null) return null;
+        String chatKey = canShareInChat(stack) ? wynntilsKeyName(() -> ChatItemFeature.class, WYNNTILS_SHARE_KEY) : null;
+        String screenshotKey = wynntilsKeyName(() -> ItemScreenshotFeature.class, WYNNTILS_SCREENSHOT_KEY);
+        if (chatKey == null && screenshotKey == null) return null;
 
-        ModConfig.ShareAction action = ModConfig.getConfig().shareAction;
-        String signature = chatKey + "|" + imageKey + "|" + action;
+        String signature = chatKey + "|" + screenshotKey;
         if (!signature.equals(cachedSignature)) {
             List<Component> lines = new ArrayList<>(2);
             if (chatKey != null) lines.add(line(LANG + "chat", chatKey));
-            if (imageKey != null) {
-                // Save Only can't be pasted anywhere, so it says "save" rather than "share".
-                lines.add(line(LANG + (action.copies() ? "image" : "image.save"), imageKey));
-            }
+            if (screenshotKey != null) lines.add(line(LANG + "screenshot", screenshotKey));
             cached = new ShareHint(lines);
             cachedSignature = signature;
         }
@@ -188,27 +183,23 @@ public final class ShareHint {
         return Models.Item.asWynnItem(stack, GearItem.class).isPresent();
     }
 
-    /** The key Wynntils' "Share Item" is bound to, or null if it's unbound or the feature is off. */
+    /**
+     * The key a Wynntils keybind is bound to, or null if it's unbound or its feature is off.
+     *
+     * @param feature supplies the feature's class, looked up inside the try so a moved class can't break the hint
+     */
     @Nullable
-    private static String wynntilsShareKeyName() {
+    private static String wynntilsKeyName(Supplier<Class<? extends Feature>> feature, String keybindName) {
         try {
-            if (!Managers.Feature.getFeatureInstance(ChatItemFeature.class).isEnabled()) return null;
+            if (!Managers.Feature.getFeatureInstance(feature.get()).isEnabled()) return null;
         } catch (RuntimeException | LinkageError e) {
             // A Wynntils version that moved the feature: assume it's on, the key lookup below still decides.
         }
         // Found by name among the game's key mappings, so it doesn't depend on Wynntils' keybind API.
         for (KeyMapping mapping : Minecraft.getInstance().options.keyMappings) {
-            if (WYNNTILS_SHARE_KEY.equals(mapping.getName())) return keyName(mapping);
+            if (keybindName.equals(mapping.getName())) return keyName(mapping);
         }
         return null;
-    }
-
-    /** "Ctrl+C" (Cmd on macOS), or null if the share key is unbound. */
-    @Nullable
-    private static String cardShareKeyName() {
-        String key = keyName(WynnWeaponViewer.shareCardKey());
-        if (key == null) return null;
-        return (Util.getPlatform() == Util.OS.OSX ? "Cmd+" : "Ctrl+") + key;
     }
 
     @Nullable

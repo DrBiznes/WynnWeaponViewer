@@ -275,7 +275,7 @@ public class ZoomedItemRenderer {
                 hintTop = renderFloatingHeader(graphics, cardData.get(), config, centerX, finalTextY,
                         finalItemY - textGap, availableWidth, alpha, idleTime, scissor);
             }
-            ShareHint hint = ShareHint.forItem(stack, true);
+            ShareHint hint = ShareHint.forItem(stack);
             if (hint != null) {
                 float hintScale = ItemCardRenderer.snapScale(Math.min(config.scale * 2.5f,
                         (float) availableWidth / hint.width()));
@@ -341,7 +341,7 @@ public class ZoomedItemRenderer {
                 regionW / CardLayout.REFERENCE_OUTER_WIDTH, regionH / CardLayout.REFERENCE_OUTER_HEIGHT)));
 
         // The share hint goes under the card, so leave room for it (in card pixels: it's drawn at the card's scale).
-        ShareHint hint = ShareHint.forItem(stack, true);
+        ShareHint hint = ShareHint.forItem(stack);
         int hintHeight = hint == null ? 0 : hint.height();
 
         // Per item, the model window takes up the slack: as tall as allowed if there's room, shorter if the item
@@ -428,16 +428,6 @@ public class ZoomedItemRenderer {
         if (scissor != null) {
             graphics.disableScissor();
         }
-    }
-
-    /**
-     * Draws a finished card - fully faded in, model held still - with its top-left at the GUI origin and one GUI
-     * pixel per tooltip pixel. Used for shared card images (see {@code CardShare}), whatever the on-screen mode.
-     */
-    public static void drawStillCard(GuiGraphics graphics, ItemStackRenderState renderState, ItemStack stack,
-                                     CardLayout layout) {
-        ItemCardRenderer.Placement placement = new ItemCardRenderer.Placement(0, 0, 1);
-        drawCard(graphics, renderState, stack, layout, placement, 1f, 0f, 1f, Float.MAX_VALUE, false, null);
     }
 
     /** Frame, then model, then text - see {@link ItemCardRenderer} for why the order matters. */

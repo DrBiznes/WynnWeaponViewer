@@ -12,7 +12,7 @@ I make your weapon big, duh. A fork of [Big Items, Duh](https://modrinth.com/mod
 - Zoom in on Wynncraft gear in your inventory
 - Two display modes: a **floating item** with its name, roll % and badges under it, or a Wynncraft-style **item card** with the item's IDs, roll bars, powders, rerolls and Nori/Wynnpool scales
 - Perfect rolls get a rainbow card frame, defective ones get static
-- Share any item: Wynntils' Share Item key links it in chat, **Ctrl+C copies its item card as an image**
+- Shows your Wynntils Share Item and Screenshot Item keys under the preview, so sharing is one keypress away
 - Appear and idle animations, configurable zoom scale and position
 - Toggle gear zoom functionality with a keybind
 - Uses Wynntils mod to detect Wynncraft weapons and gear
@@ -26,7 +26,7 @@ Floating item mode (the default): the item big, with its name, overall roll and 
 ![floating](https://github.com/user-attachments/assets/4435b280-5459-45b3-a69d-b25fc2ca8cea)
 
 
-Item card mode: the same item in a Wynncraft-style card with every ID and roll. This is also what Ctrl+C copies.
+Item card mode: the same item in a Wynncraft-style card with every ID and roll.
 
 ![card](https://github.com/user-attachments/assets/4f9ce3c6-72d6-400f-a949-555ff743acd2)
 
@@ -43,7 +43,7 @@ Every setting lives in `config/wynnweaponbigger.json` to edit settings in game:
 
 1. Install [Cloth Config](https://modrinth.com/mod/cloth-config) (and [Mod Menu](https://modrinth.com/mod/modmenu) for a "Configure" button in the mod list).
 2. Open the settings with `/wwb config`, or from Mods -> "Wynn Weapon Bigger" -> "Configure".
-3. Pick the display mode (floating item, the default, or item card), size, side and offsets, what the card shows, animations, Ctrl+C sharing, and which items get the preview.
+3. Pick the display mode (floating item, the default, or item card), size, side and offsets, what the card shows, animations, the share hint, and which items get the preview.
 
 Without Cloth Config, `/wwb config` shows where the file is. Edit it, then run `/wwb reload`.
 
@@ -52,7 +52,7 @@ Without Cloth Config, `/wwb config` shows where the file is. Edit it, then run `
 - Hover over a Wynncraft weapon in your inventory to see it zoomed in.
 - The zoomed view will disappear when you move your cursor away from the weapon.
 - Use the configured keybind (default: period key) to toggle the zoom functionality on/off.
-- Share the hovered item: press Wynntils' Share Item key to link it in chat, or Ctrl+C to copy its item card as an image. The small print under the preview shows your current keybinds.
+- Share the hovered item with Wynntils: its Share Item key links it in chat, and its Screenshot Item key takes an image of the tooltip. The small print under the preview shows your current keybinds.
 - Use /wwb for a list of commands
 
 ## Requirements
