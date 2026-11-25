@@ -46,7 +46,7 @@ public final class WynncraftSkin implements CardSkin {
         Optional<Component> quaternary = Optional.empty();
         if (data.setName().isPresent()) {
             tertiary = Optional.of(BannerBoxFont.buildMessage(
-                    data.setName().get() + " set", secondaryColor, CommonColors.BLACK, "󐀂"));
+                    bannerText(data.setName().get() + " set"), secondaryColor, CommonColors.BLACK, "󐀂"));
             quaternary = elementTag;
         } else if (data.kind() == ItemCardData.Kind.GEAR_BOX || data.kind() == ItemCardData.Kind.GEAR_UNIDENTIFIED) {
             tertiary = Optional.of(BannerBoxFont.buildMessage(
@@ -60,7 +60,7 @@ public final class WynncraftSkin implements CardSkin {
         Optional<Component> majorBadge = data.majorId()
                 .map(ItemCardData.MajorId::name)
                 .filter(name -> !name.isBlank())
-                .map(name -> BannerBoxFont.buildMessage(name, CommonColors.WYNNCRAFT_AQUA, CommonColors.BLACK, ""));
+                .map(name -> BannerBoxFont.buildMessage(bannerText(name), CommonColors.WYNNCRAFT_AQUA, CommonColors.BLACK, ""));
         if (majorBadge.isPresent()) {
             if (tertiary.isEmpty()) {
                 tertiary = majorBadge;
@@ -142,6 +142,18 @@ public final class WynncraftSkin implements CardSkin {
                 Math.max(1, options.decimalPlaces()),
                 overall.estimated())));
         return name;
+    }
+
+    /**
+     * Wynncraft's banner-box font only has glyphs for letters and digits; anything else (an apostrophe in
+     * "Forest's Blessing", a comma, a hyphen) turns into a broken run of missing glyphs. Drop apostrophes
+     * and turn other punctuation into spaces.
+     */
+    private static String bannerText(String text) {
+        return text.replaceAll("['’`]", "")
+                .replaceAll("[^A-Za-z0-9 ]+", " ")
+                .replaceAll(" {2,}", " ")
+                .strip();
     }
 
     /** One element: icon + name badge. Several: icons only (same rule as Wynntils / Wynncraft). */
